@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Barra superior reutilizable: se incluye con fx:include en cada vista con sesión. -->
+<HBox styleClass="navbar" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.bibliotecasistema.controller.NavbarController">
+
+    <Label text="Biblioteca negocios" styleClass="navbar-marca"/>
+
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Button fx:id="btnLibros" text="Libros" styleClass="nav-boton" onAction="#irALibros"/>
+        <Button fx:id="btnPrestamo" text="Préstamo" styleClass="nav-boton" onAction="#irAPrestamo"/>
+        <Button fx:id="btnInventario" text="Inventario" styleClass="nav-boton" onAction="#irAInventario"/>
+    </HBox>
+
+    <Region HBox.hgrow="ALWAYS"/>
+
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <StackPane styleClass="avatar">
+            <Label fx:id="lblIniciales" styleClass="avatar-iniciales"/>
+        </StackPane>
+        <VBox alignment="CENTER_LEFT" spacing="1">
+            <Label fx:id="lblNombre" styleClass="navbar-usuario"/>
+            <Label fx:id="lblRol" styleClass="navbar-rol"/>
+        </VBox>
+    </HBox>
+
+    <Button text="Salir" styleClass="boton-salir" onAction="#salir"/>
+</HBox>

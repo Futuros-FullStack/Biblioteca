@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane styleClass="login-fondo" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.LoginController">
+    <VBox fx:id="tarjeta" styleClass="login-tarjeta" alignment="TOP_CENTER"
+          minWidth="450" prefWidth="450" maxWidth="450" minHeight="330" maxHeight="-Infinity">
+
+        <Label text="BIBLIOTECA" styleClass="login-titulo"/>
+        <Label text="FACULTAD DE NEGOCIOS" styleClass="login-subtitulo">
+            <VBox.margin><Insets bottom="18"/></VBox.margin>
+        </Label>
+
+        <Label fx:id="lblEligeRol" text="Elige tu rol:" styleClass="login-etiqueta"
+               maxWidth="Infinity"/>
+        <ComboBox fx:id="cbRol" promptText="Selecciona un rol" styleClass="combo-login"
+                  maxWidth="Infinity"/>
+
+        <!-- Solo para Administrador -->
+        <VBox fx:id="boxCredenciales" spacing="8">
+            <Label text="Nombre de usuario o correo" styleClass="login-etiqueta">
+                <VBox.margin><Insets top="6"/></VBox.margin>
+            </Label>
+            <TextField fx:id="txtUsuario" styleClass="input-login"
+                       promptText="usuario@unach.mx" onAction="#enfocarContrasena"/>
+            <Label text="Contraseña" styleClass="login-etiqueta">
+                <VBox.margin><Insets top="6"/></VBox.margin>
+            </Label>
+            <PasswordField fx:id="txtContrasena" styleClass="input-login"
+                           promptText="••••••••" onAction="#ingresar"/>
+        </VBox>
+
+        <Label fx:id="lblError" styleClass="mensaje-error-login" wrapText="true" maxWidth="Infinity"/>
+
+        <Button fx:id="btnIngresar" text="Ingresar" styleClass="boton-login"
+                maxWidth="Infinity" onAction="#ingresar">
+            <VBox.margin><Insets top="10"/></VBox.margin>
+        </Button>
+    </VBox>
+</StackPane>

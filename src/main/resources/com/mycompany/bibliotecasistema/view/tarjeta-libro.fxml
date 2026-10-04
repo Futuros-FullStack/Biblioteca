@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Tarjeta reutilizable de un libro en el catálogo. Los textos los llena TarjetaLibroController. -->
+<VBox fx:id="tarjeta" styleClass="tarjeta-libro" onMouseClicked="#seleccionar"
+      xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.bibliotecasistema.controller.TarjetaLibroController">
+
+    <HBox styleClass="tarjeta-portada" VBox.vgrow="ALWAYS">
+        <Region styleClass="tarjeta-lomo"/>
+        <VBox styleClass="tarjeta-portada-texto" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTitulo" styleClass="tarjeta-titulo" wrapText="true"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Label fx:id="lblCiudadAnio" styleClass="tarjeta-ciudad"/>
+        </VBox>
+    </HBox>
+
+    <HBox styleClass="tarjeta-pie">
+        <Label fx:id="lblAutores" styleClass="tarjeta-autores" wrapText="true"/>
+    </HBox>
+</VBox>
