@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -22,7 +24,9 @@
         <Label fx:id="lblEligeRol" text="Elige tu rol:" styleClass="login-etiqueta"
                maxWidth="Infinity"/>
         <ComboBox fx:id="cbRol" promptText="Selecciona un rol" styleClass="combo-login"
-                  maxWidth="Infinity"/>
+                  maxWidth="Infinity">
+            <items><FXCollections fx:factory="observableArrayList"><String fx:value="Estudiante"/><String fx:value="Administrador"/></FXCollections></items>
+        </ComboBox>
 
         <!-- Solo para Administrador -->
         <VBox fx:id="boxCredenciales" spacing="8">
@@ -30,18 +34,19 @@
                 <VBox.margin><Insets top="6"/></VBox.margin>
             </Label>
             <TextField fx:id="txtUsuario" styleClass="input-login"
-                       promptText="usuario@unach.mx" onAction="#enfocarContrasena"/>
+                       promptText="usuario@unach.mx"/>
             <Label text="Contraseña" styleClass="login-etiqueta">
                 <VBox.margin><Insets top="6"/></VBox.margin>
             </Label>
             <PasswordField fx:id="txtContrasena" styleClass="input-login"
-                           promptText="••••••••" onAction="#ingresar"/>
+                           promptText="••••••••"/>
         </VBox>
 
-        <Label fx:id="lblError" styleClass="mensaje-error-login" wrapText="true" maxWidth="Infinity"/>
+        <Label fx:id="lblError" text="Usuario o contraseña incorrectos." styleClass="mensaje-error-login"
+               wrapText="true" maxWidth="Infinity" visible="false" managed="false"/>
 
-        <Button fx:id="btnIngresar" text="Ingresar" styleClass="boton-login"
-                maxWidth="Infinity" onAction="#ingresar">
+        <Button fx:id="btnIngresar" onAction="#ingresar" text="Ingresar" styleClass="boton-login"
+                maxWidth="Infinity">
             <VBox.margin><Insets top="10"/></VBox.margin>
         </Button>
     </VBox>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Recordatorio al alumno por correo. -->
+<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
+    <VBox styleClass="modal, modal-simple" prefWidth="540" maxWidth="540">
+
+        <VBox spacing="3">
+            <Label fx:id="lblTitulo" text="Notificar a [Nombre del alumno]" styleClass="modal-titulo-simple" wrapText="true"/>
+            <Label text="Recordatorio de entrega de sus préstamos activos." styleClass="modal-subtitulo"/>
+        </VBox>
+
+        <HBox styleClass="caja-info">
+            <Label text="Se enviará al correo:"/>
+            <Label fx:id="lblCorreo" text="[Correo]" styleClass="caja-info-dato"/>
+        </HBox>
+
+        <VBox spacing="6">
+            <Label text="Mensaje" styleClass="form-etiqueta"/>
+            <TextArea fx:id="txtMensaje" styleClass="area-modal" prefRowCount="6" wrapText="true"
+                      text="Hola [Nombre], te recordamos tus préstamos en la Biblioteca de la Facultad de Negocios:&#10;· [Título del libro] — vence el [Fecha]&#10;Gracias."/>
+            <Label fx:id="lblAyuda" text="Puedes editar el mensaje antes de enviarlo." styleClass="mensaje-ayuda"
+                   wrapText="true"/>
+        </VBox>
+
+        <HBox styleClass="modal-pie-simple">
+            <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
+            <Button fx:id="btnEnviar" onAction="#cerrar" text="Enviar aviso" styleClass="boton-primario"/>
+        </HBox>
+    </VBox>
+</StackPane>

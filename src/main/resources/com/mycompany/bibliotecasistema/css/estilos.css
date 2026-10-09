@@ -21,6 +21,12 @@
     -color-alerta:          #B3261E;
     -color-blanco:          #FFFFFF;
 
+    /* Tablas, pestañas y avisos (Préstamos / Inventario) */
+    -color-fondo-suave:     #EDF1FA;
+    -color-linea:           #E3E8F4;
+    -color-seleccion:       #E4EAF7;
+    -color-alerta-suave:    #FCEEEC;
+
     /* Derivados (transparencias del blanco y sombras) */
     -color-blanco-80:       rgba(255, 255, 255, 0.80);
     -color-blanco-55:       rgba(255, 255, 255, 0.55);
@@ -44,7 +50,9 @@
 .fuente-inter .login-titulo,
 .fuente-inter .titulo-seccion,
 .fuente-inter .modal-titulo,
-.fuente-inter .placeholder-titulo {
+.fuente-inter .placeholder-titulo,
+.fuente-inter .modal-titulo-simple,
+.fuente-inter .alumno-nombre {
     -fx-font-family: "Segoe UI";
 }
 
@@ -560,6 +568,7 @@
 .estado-prestado   { -fx-text-fill: -color-primario-claro; }
 .estado-vencido    { -fx-text-fill: -color-alerta; }
 .estado-danado     { -fx-text-fill: -color-texto-suave; }
+.estado-extraviado { -fx-text-fill: -color-alerta; }
 
 .boton-prestar {
     -fx-background-color: -color-primario;
@@ -689,6 +698,457 @@
 .mensaje-ayuda {
     -fx-text-fill: -color-texto-suave;
     -fx-font-size: 12px;
+}
+
+/* ---------------------------------------------------------------------
+   Préstamos e Inventario: pestañas, tablas y botones de fila
+   --------------------------------------------------------------------- */
+.pestana {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 16;
+    -fx-border-color: -color-borde;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-text-fill: -color-primario;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 16;
+    -fx-cursor: hand;
+}
+
+.pestana:hover {
+    -fx-background-color: -color-fondo-suave;
+}
+
+.pestana:selected {
+    -fx-background-color: -color-primario;
+    -fx-border-color: -color-primario;
+    -fx-text-fill: -color-blanco;
+}
+
+.paso-etiqueta {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Tabla con borde redondeado y renglones separados por una línea */
+.tabla {
+    -fx-background-color: -color-borde, -color-blanco;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12, 11;
+    -fx-padding: 1;
+}
+
+.tabla:focused {
+    -fx-background-color: -color-borde, -color-blanco;
+    -fx-background-insets: 0, 1;
+}
+
+.tabla > .column-header-background {
+    -fx-background-color: -color-linea, -color-blanco;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-background-radius: 11 11 0 0;
+}
+
+.tabla .column-header,
+.tabla .column-header-background .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-size: 46;
+}
+
+.tabla .column-header > .label {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+    -fx-padding: 0 16;
+}
+
+.tabla .table-row-cell {
+    -fx-background-color: -color-linea, -color-blanco;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-cell-size: 56;
+    -fx-padding: 0;
+}
+
+.tabla .table-row-cell:filled:hover {
+    -fx-background-color: -color-linea, -color-fondo;
+}
+
+.tabla .table-row-cell:filled:selected {
+    -fx-background-color: -color-linea, -color-seleccion;
+}
+
+/* Préstamo vencido: renglón resaltado */
+.tabla .table-row-cell:vencido,
+.tabla .table-row-cell:vencido:hover,
+.tabla .table-row-cell:vencido:selected {
+    -fx-background-color: -color-linea, -color-alerta-suave;
+}
+
+.tabla .table-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 16;
+    -fx-alignment: center-left;
+    -fx-text-fill: -color-texto;
+}
+
+.tabla .col-accion {
+    -fx-alignment: center-right;
+}
+
+.tabla .placeholder {
+    -fx-background-color: transparent;
+}
+
+.tabla-vacia {
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 14px;
+    -fx-padding: 30;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+}
+
+.tabla-dato {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 13px;
+}
+
+.tabla-dato-fuerte {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.tabla-dato-suave {
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 11px;
+}
+
+/* Etiqueta de estado con punto de color */
+.punto {
+    -fx-min-width: 7;
+    -fx-min-height: 7;
+    -fx-max-width: 7;
+    -fx-max-height: 7;
+    -fx-background-radius: 4;
+    -fx-background-color: -color-texto-suave;
+}
+
+.estado {
+    -fx-font-size: 12px;
+}
+
+.estado-disponible > .punto { -fx-background-color: -color-exito; }
+.estado-prestado > .punto   { -fx-background-color: -color-primario-claro; }
+.estado-vencido > .punto,
+.estado-extraviado > .punto { -fx-background-color: -color-alerta; }
+.estado-danado > .punto     { -fx-background-color: -color-texto-suave; }
+
+/* Botones dentro de las tablas */
+.boton-tabla,
+.boton-tabla-secundario {
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.boton-tabla {
+    -fx-background-color: -color-primario;
+    -fx-text-fill: -color-blanco;
+    -fx-padding: 7 14;
+}
+
+.boton-tabla:hover {
+    -fx-background-color: -color-primario-hover;
+}
+
+.boton-tabla-secundario {
+    -fx-background-color: -color-blanco;
+    -fx-border-color: -color-primario-claro;
+    -fx-border-width: 1;
+    -fx-text-fill: -color-primario;
+    -fx-padding: 6 12;
+}
+
+.boton-tabla-secundario:hover,
+.boton-icono:hover {
+    -fx-background-color: -color-fondo-suave;
+}
+
+.boton-icono {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 7;
+    -fx-border-color: -color-primario-claro;
+    -fx-border-width: 1;
+    -fx-border-radius: 7;
+    -fx-padding: 7;
+    -fx-cursor: hand;
+}
+
+.boton-icono.peligro {
+    -fx-border-color: -color-alerta;
+}
+
+.boton-icono.peligro:hover {
+    -fx-background-color: -color-alerta-suave;
+}
+
+/* Iconos dibujados con -fx-shape (no requieren imágenes) */
+.icono {
+    -fx-min-width: 13;
+    -fx-min-height: 13;
+    -fx-max-width: 13;
+    -fx-max-height: 13;
+    -fx-background-color: -color-primario;
+}
+
+.peligro .icono {
+    -fx-background-color: -color-alerta;
+}
+
+.icono-editar {
+    -fx-shape: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z";
+}
+
+.icono-eliminar {
+    -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+}
+
+.icono-campana {
+    -fx-shape: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z";
+}
+
+.boton-secundario:disabled .icono {
+    -fx-opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------------
+   Modales sin encabezado azul (formularios de Préstamos e Inventario)
+   --------------------------------------------------------------------- */
+.modal-simple {
+    -fx-padding: 26 30 24 30;
+    -fx-spacing: 16;
+}
+
+.modal-subtitulo {
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 13px;
+}
+
+.modal-pie-simple {
+    -fx-spacing: 12;
+    -fx-alignment: center-right;
+    -fx-padding: 6 0 0 0;
+}
+
+.etiqueta-opcional {
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 12px;
+}
+
+.caja-info {
+    -fx-background-color: -color-fondo-suave;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+    -fx-spacing: 5;
+    -fx-alignment: center-left;
+}
+
+.caja-info-dato {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primario;
+}
+
+.campo-solo-lectura,
+.campo-solo-lectura:focused {
+    -fx-background-color: -color-fondo-suave;
+    -fx-border-color: -color-linea;
+    -fx-text-fill: -color-texto;
+}
+
+.indicador {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.indicador-a-tiempo { -fx-text-fill: -color-exito; }
+.indicador-retraso  { -fx-text-fill: -color-alerta; }
+
+/* ComboBox de formularios */
+.combo-modal {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 10;
+    -fx-border-color: -color-borde;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+    -fx-cursor: hand;
+}
+
+.combo-modal:focused,
+.combo-modal:showing {
+    -fx-border-color: -color-primario;
+}
+
+.combo-modal:disabled {
+    -fx-opacity: 0.7;
+}
+
+.combo-modal > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-texto;
+    -fx-padding: 0 12;
+    -fx-font-size: 13px;
+}
+
+.combo-modal > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12 0 6;
+}
+
+.combo-modal > .arrow-button > .arrow {
+    -fx-background-color: -color-primario;
+    -fx-shape: "M 0 0 L 12 0 L 6 7 Z";
+    -fx-padding: 3 5;
+}
+
+.combo-modal .combo-box-popup > .list-view {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-borde;
+    -fx-border-radius: 8;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(gaussian, -color-sombra, 10, 0, 0, 3);
+}
+
+.combo-modal .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-texto;
+    -fx-padding: 7 10;
+    -fx-background-radius: 6;
+    -fx-font-size: 13px;
+}
+
+.combo-modal .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
+.combo-modal .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
+    -fx-background-color: -color-fondo-suave;
+    -fx-text-fill: -color-primario;
+}
+
+/* Área de texto */
+.area-modal {
+    -fx-background-color: -color-borde, -color-blanco;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-text-fill: -color-texto;
+    -fx-prompt-text-fill: -color-texto-suave;
+    -fx-highlight-fill: -color-primario-claro;
+    -fx-font-size: 13px;
+}
+
+.area-modal:focused {
+    -fx-background-color: -color-primario, -color-blanco;
+}
+
+.area-modal .content {
+    -fx-background-color: transparent;
+    -fx-padding: 8 12;
+}
+
+.area-modal > .scroll-pane,
+.area-modal > .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Casillas de verificación */
+.check-modal {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.check-modal > .box {
+    -fx-background-color: -color-borde, -color-blanco;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+    -fx-padding: 3;
+}
+
+.check-modal:selected > .box {
+    -fx-background-color: -color-primario;
+    -fx-background-insets: 0;
+}
+
+.check-modal:selected > .box > .mark {
+    -fx-background-color: -color-blanco;
+}
+
+/* ---------------------------------------------------------------------
+   Ficha del alumno
+   --------------------------------------------------------------------- */
+.modal-ficha {
+    -fx-padding: 14;
+}
+
+.alumno-encabezado {
+    -fx-background-color: -color-primario;
+    -fx-background-radius: 10;
+    -fx-padding: 16 20;
+    -fx-spacing: 14;
+    -fx-alignment: center-left;
+}
+
+.alumno-nombre {
+    -fx-text-fill: -color-blanco;
+    -fx-font-size: 21px;
+    -fx-font-weight: bold;
+}
+
+.alumno-matricula {
+    -fx-text-fill: -color-blanco-80;
+    -fx-font-size: 12px;
+}
+
+.ficha-cuerpo {
+    -fx-padding: 18 16 6 16;
+    -fx-spacing: 14;
+}
+
+.ficha-pie {
+    -fx-padding: 12 16 8 16;
+    -fx-spacing: 10;
+    -fx-alignment: center-right;
+}
+
+.ficha-etiqueta {
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 13px;
+}
+
+.ficha-valor {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 13px;
+}
+
+.ejemplar-tarjeta.vencido {
+    -fx-background-color: -color-alerta-suave;
+    -fx-border-color: -color-alerta;
+}
+
+.aviso-adeudo {
+    -fx-background-color: -color-alerta-suave;
+    -fx-background-radius: 8;
+    -fx-text-fill: -color-alerta;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 9 12;
 }
 
 /* ---------------------------------------------------------------------

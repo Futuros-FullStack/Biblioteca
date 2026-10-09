@@ -12,17 +12,17 @@
 
 <!-- Modal con el detalle de un libro y sus ejemplares. -->
 <StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.DetalleLibroController">
+           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
     <VBox styleClass="modal" prefWidth="660" maxWidth="660">
 
         <HBox styleClass="modal-encabezado">
             <Region styleClass="modal-lomo"/>
-            <Label fx:id="lblTitulo" styleClass="modal-titulo" wrapText="true" maxWidth="Infinity"
+            <Label fx:id="lblTitulo" text="[Título del libro]" styleClass="modal-titulo" wrapText="true" maxWidth="Infinity"
                    HBox.hgrow="ALWAYS"/>
         </HBox>
 
         <VBox styleClass="modal-cuerpo" VBox.vgrow="ALWAYS">
-            <Label fx:id="lblDescripcion" styleClass="descripcion" wrapText="true" minHeight="-Infinity"/>
+            <Label fx:id="lblDescripcion" text="[Descripción del libro]" styleClass="descripcion" wrapText="true" minHeight="-Infinity"/>
 
             <GridPane hgap="12" vgap="6">
                 <columnConstraints>
@@ -30,28 +30,34 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
                 <Label text="Autor:" styleClass="dato-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <Label fx:id="lblAutor" styleClass="dato-valor" wrapText="true" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label fx:id="lblAutor" text="[Autores]" styleClass="dato-valor" wrapText="true" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                 <Label text="ISBN:" styleClass="dato-etiqueta" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <Label fx:id="lblIsbn" styleClass="dato-valor" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label fx:id="lblIsbn" text="[ISBN]" styleClass="dato-valor" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
                 <Label text="Editorial:" styleClass="dato-etiqueta" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                <Label fx:id="lblEditorial" styleClass="dato-valor" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label fx:id="lblEditorial" text="[Editorial]" styleClass="dato-valor" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                 <Label text="Año:" styleClass="dato-etiqueta" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                <Label fx:id="lblAnio" styleClass="dato-valor" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Label fx:id="lblAnio" text="[Año]" styleClass="dato-valor" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
             </GridPane>
 
             <Label text="Datos de ubicación del libro" styleClass="subtitulo"/>
 
             <ScrollPane styleClass="scroll-modal" fitToWidth="true" hbarPolicy="NEVER" maxHeight="230">
-                <VBox fx:id="listaEjemplares" spacing="10"/>
+                <VBox fx:id="listaEjemplares" spacing="10">
+                    <HBox styleClass="ejemplar-tarjeta">
+                        <VBox spacing="2">
+                            <Label text="[Código]" styleClass="ejemplar-codigo"/>
+                            <Label text="Pasillo [A] - Estante [1] - Fila [1]" styleClass="ejemplar-ubicacion"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="[Estado]" styleClass="estado, estado-disponible"/>
+                    </HBox>
+                </VBox>
             </ScrollPane>
         </VBox>
 
         <HBox styleClass="modal-pie">
-            <Button fx:id="btnAgregarEjemplar" text="+ Agregar ejemplar" styleClass="boton-secundario"
-                    onAction="#agregarEjemplar"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="btnCerrar" text="Cerrar" styleClass="boton-secundario" cancelButton="true"
-                    onAction="#cerrar"/>
+            <Button fx:id="btnCerrar" onAction="#cerrar" text="Cerrar" styleClass="boton-secundario" cancelButton="true"/>
         </HBox>
     </VBox>
 </StackPane>
