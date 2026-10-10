@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Ficha del alumno: datos, préstamos activos y acciones (notificar / prestar). -->
+<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.DetalleAlumnoController">
+    <VBox styleClass="modal, modal-ficha" prefWidth="560" maxWidth="560">
+
+        <HBox styleClass="alumno-encabezado">
+            <StackPane styleClass="avatar">
+                <Label fx:id="lblIniciales" text="AL" styleClass="avatar-iniciales"/>
+            </StackPane>
+            <VBox spacing="2" alignment="CENTER_LEFT">
+                <Label fx:id="lblNombre" text="[Nombre del alumno]" styleClass="alumno-nombre" wrapText="true"/>
+                <Label fx:id="lblMatricula" text="Matrícula [Matrícula]" styleClass="alumno-matricula"/>
+            </VBox>
+        </HBox>
+
+        <VBox styleClass="ficha-cuerpo">
+            <GridPane hgap="20" vgap="7">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="90"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Correo" styleClass="ficha-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label fx:id="lblCorreo" text="[Correo]" styleClass="ficha-valor" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Teléfono" styleClass="ficha-etiqueta" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label fx:id="lblTelefono" text="[Teléfono]" styleClass="ficha-valor" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Situación" styleClass="ficha-etiqueta" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <StackPane fx:id="cajaSituacion" alignment="CENTER_LEFT" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                    <Label text="Al corriente" styleClass="estado, estado-disponible" graphicTextGap="7">
+                        <graphic><Region styleClass="punto"/></graphic>
+                    </Label>
+                </StackPane>
+            </GridPane>
+
+            <Label text="Préstamos activos" styleClass="subtitulo"/>
+            <ScrollPane styleClass="scroll-modal" fitToWidth="true" hbarPolicy="NEVER" maxHeight="220">
+                <VBox fx:id="listaPrestamos" spacing="8">
+                    <HBox styleClass="ejemplar-tarjeta">
+                        <VBox spacing="2">
+                            <Label text="[Título del libro] · [Código]" styleClass="ejemplar-codigo"/>
+                            <Label text="Entrega: [Fecha]" styleClass="ejemplar-ubicacion"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Prestado" styleClass="estado, estado-prestado" graphicTextGap="7">
+                            <graphic><Region styleClass="punto"/></graphic>
+                        </Label>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+
+            <Label fx:id="lblAviso" text="Debe devolver su libro vencido antes de llevarse otro."
+                   styleClass="aviso-adeudo" maxWidth="Infinity" wrapText="true"
+                   visible="false" managed="false"/>
+        </VBox>
+
+        <HBox styleClass="ficha-pie">
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
+            <Button fx:id="btnNotificar" onAction="#notificar" text="Notificar" styleClass="boton-secundario">
+                <graphic><Region styleClass="icono, icono-campana"/></graphic>
+            </Button>
+            <Button fx:id="btnPrestar" onAction="#prestar" text="Realizar otro préstamo" styleClass="boton-primario"/>
+        </HBox>
+    </VBox>
+</StackPane>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Catálogo de libros: mismo FXML para Estudiante y Administrador (el rol se lee de Sesion). -->
+<BorderPane xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1">
+    <top>
+        <fx:include fx:id="navbar" source="navbar.fxml"/>
+    </top>
+
+    <center>
+        <VBox styleClass="contenido">
+            <Label text="Catálogo de libros" styleClass="titulo-seccion"/>
+
+            <TextField fx:id="txtBusqueda" styleClass="campo-busqueda"
+                       promptText="Busca libro por título, autor o ISBN"/>
+
+            <StackPane VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="scrollLibros" styleClass="scroll-catalogo" fitToWidth="true"
+                            hbarPolicy="NEVER">
+                    <FlowPane fx:id="panelLibros" styleClass="panel-libros">
+                        <fx:include source="tarjeta-libro.fxml"/>
+                        <fx:include source="tarjeta-libro.fxml"/>
+                        <fx:include source="tarjeta-libro.fxml"/>
+                    </FlowPane>
+                </ScrollPane>
+                <Label fx:id="lblSinResultados" text="No se encontraron libros"
+                       styleClass="sin-resultados" StackPane.alignment="TOP_CENTER"
+                       visible="false" managed="false"/>
+            </StackPane>
+        </VBox>
+    </center>
+</BorderPane>

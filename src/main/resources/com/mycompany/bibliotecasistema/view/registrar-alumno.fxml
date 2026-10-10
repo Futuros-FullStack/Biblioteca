@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Modal para dar de alta a un alumno antes de prestarle. -->
+<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
+    <VBox styleClass="modal, modal-simple" prefWidth="520" maxWidth="520">
+
+        <VBox spacing="3">
+            <Label text="Registrar alumno" styleClass="modal-titulo-simple"/>
+            <Label text="Después lo encontrarás en la lista para asignarle su préstamo."
+                   styleClass="modal-subtitulo"/>
+        </VBox>
+
+        <GridPane hgap="16" vgap="6">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+
+            <Label text="Nombre completo" styleClass="form-etiqueta"
+                   GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <TextField fx:id="txtNombre" styleClass="campo-modal" promptText="Nombre y apellidos"
+                       GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+
+            <Label text="Matrícula" styleClass="form-etiqueta" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                   style="-fx-padding: 8 0 0 0;"/>
+            <TextField fx:id="txtMatricula" styleClass="campo-modal" promptText="9 dígitos"
+                       GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <HBox spacing="4" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-padding: 8 0 0 0;">
+                <Label text="Teléfono" styleClass="form-etiqueta"/>
+                <Label text="(opcional)" styleClass="etiqueta-opcional"/>
+            </HBox>
+            <TextField fx:id="txtTelefono" styleClass="campo-modal" promptText="10 dígitos"
+                       GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <Label text="Correo institucional" styleClass="form-etiqueta" GridPane.rowIndex="4"
+                   GridPane.columnIndex="0" GridPane.columnSpan="2" style="-fx-padding: 8 0 0 0;"/>
+            <TextField fx:id="txtCorreo" styleClass="campo-modal" promptText="alumno@unach.mx"
+                       GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+        </GridPane>
+
+        <Label fx:id="lblError" styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"/>
+
+        <HBox styleClass="modal-pie-simple">
+            <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
+            <Button text="Guardar alumno" onAction="#cerrar" styleClass="boton-primario" defaultButton="true"/>
+        </HBox>
+    </VBox>
+</StackPane>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Préstamo a un alumno ya elegido: se escoge el libro y el ejemplar disponible. -->
+<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
+    <VBox styleClass="modal, modal-simple" prefWidth="560" maxWidth="560">
+
+        <Label text="Préstamo" styleClass="modal-titulo-simple"/>
+
+        <GridPane hgap="16" vgap="6">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <Label text="Nombre del alumno" styleClass="form-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtNombre" text="[Nombre del alumno]" styleClass="campo-modal, campo-solo-lectura" editable="false"
+                       focusTraversable="false" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label text="Matrícula" styleClass="form-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <TextField fx:id="txtMatricula" text="[Matrícula]" styleClass="campo-modal, campo-solo-lectura" editable="false"
+                       focusTraversable="false" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        </GridPane>
+
+        <VBox spacing="6">
+            <Label text="Libro y ejemplar" styleClass="form-etiqueta"/>
+            <ComboBox fx:id="cbEjemplar" styleClass="combo-modal" maxWidth="Infinity"
+                      promptText="Elige el libro"/>
+            <Label fx:id="lblAyudaEjemplar" text="Solo aparecen ejemplares disponibles."
+                   styleClass="mensaje-ayuda"/>
+        </VBox>
+
+        <GridPane hgap="16" vgap="6">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <Label text="Fecha de préstamo" styleClass="form-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="dpPrestamo" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label text="Fecha de entrega" styleClass="form-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <DatePicker fx:id="dpEntrega" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        </GridPane>
+
+        <Label fx:id="lblAyudaFechas" text="Plazo de préstamo: 3 días. La fecha de entrega se calcula sola: puedes cambiarla si hace falta." styleClass="mensaje-ayuda" wrapText="true" minHeight="-Infinity"/>
+        <Label fx:id="lblErrorFechas" text="La fecha de entrega debe ser posterior a la fecha de préstamo."
+               styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"
+               visible="false" managed="false"/>
+
+        <HBox styleClass="modal-pie-simple">
+            <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
+            <Button fx:id="btnRegistrar" onAction="#cerrar" text="Registrar préstamo" styleClass="boton-primario"/>
+        </HBox>
+    </VBox>
+</StackPane>
