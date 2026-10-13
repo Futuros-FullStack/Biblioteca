@@ -10,18 +10,18 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Modal con el detalle de un libro y sus ejemplares. -->
-<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
-    <VBox styleClass="modal" prefWidth="660" maxWidth="660">
+<!-- Ventana emergente con el detalle de un libro y sus ejemplares. -->
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+    <VBox styleClass="ventana" prefWidth="660" maxWidth="660">
 
-        <HBox styleClass="modal-encabezado">
-            <Region styleClass="modal-lomo"/>
-            <Label fx:id="lblTitulo" text="[Título del libro]" styleClass="modal-titulo" wrapText="true" maxWidth="Infinity"
+        <HBox styleClass="ventana-encabezado">
+            <Region styleClass="ventana-lomo"/>
+            <Label fx:id="lblTitulo" text="[Título del libro]" styleClass="ventana-titulo" wrapText="true" maxWidth="Infinity"
                    HBox.hgrow="ALWAYS"/>
         </HBox>
 
-        <VBox styleClass="modal-cuerpo" VBox.vgrow="ALWAYS">
+        <VBox styleClass="ventana-cuerpo" VBox.vgrow="ALWAYS">
             <Label fx:id="lblDescripcion" text="[Descripción del libro]" styleClass="descripcion" wrapText="true" minHeight="-Infinity"/>
 
             <GridPane hgap="12" vgap="6">
@@ -41,7 +41,7 @@
 
             <Label text="Datos de ubicación del libro" styleClass="subtitulo"/>
 
-            <ScrollPane styleClass="scroll-modal" fitToWidth="true" hbarPolicy="NEVER" maxHeight="230">
+            <ScrollPane styleClass="scroll-ventana" fitToWidth="true" hbarPolicy="NEVER" maxHeight="230">
                 <VBox fx:id="listaEjemplares" spacing="10">
                     <HBox styleClass="ejemplar-tarjeta">
                         <VBox spacing="2">
@@ -55,7 +55,7 @@
             </ScrollPane>
         </VBox>
 
-        <HBox styleClass="modal-pie">
+        <HBox styleClass="ventana-pie">
             <Region HBox.hgrow="ALWAYS"/>
             <Button fx:id="btnCerrar" onAction="#cerrar" text="Cerrar" styleClass="boton-secundario" cancelButton="true"/>
         </HBox>

@@ -1,7 +1,6 @@
 package com.mycompany.bibliotecasistema.controller;
 
 import com.mycompany.bibliotecasistema.App;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -12,11 +11,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
-/**
- * Préstamos: cambia de pestaña y abre los modales.
- * Cada tabla tiene un renglón de ejemplo (solo textos entre corchetes)
- * para poder probar sus botones.
- */
 public class PrestamosController {
 
     @FXML
@@ -29,65 +23,53 @@ public class PrestamosController {
     private VBox panelAlumnos;
     @FXML
     private TextField txtBuscarAlumno;
-
     @FXML
-    private TableView<String> tablaEntregas;
+    private TableView<Object> tablaEntregas;
     @FXML
-    private TableColumn<String, String> colAlumno;
+    private TableColumn<Object, String> colAlumno;
     @FXML
-    private TableColumn<String, String> colLibro;
+    private TableColumn<Object, String> colLibro;
     @FXML
-    private TableColumn<String, String> colEntrega;
+    private TableColumn<Object, String> colEntrega;
     @FXML
-    private TableColumn<String, String> colEstado;
+    private TableColumn<Object, String> colEstado;
     @FXML
-    private TableColumn<String, String> colAccionEntrega;
-
+    private TableColumn<Object, String> colAccionEntrega;
     @FXML
-    private TableView<String> tablaAlumnos;
+    private TableView<Object> tablaAlumnos;
     @FXML
-    private TableColumn<String, String> colMatricula;
+    private TableColumn<Object, String> colMatricula;
     @FXML
-    private TableColumn<String, String> colNombre;
+    private TableColumn<Object, String> colNombre;
     @FXML
-    private TableColumn<String, String> colActivos;
+    private TableColumn<Object, String> colActivos;
     @FXML
-    private TableColumn<String, String> colTotal;
+    private TableColumn<Object, String> colTotal;
     @FXML
-    private TableColumn<String, String> colSituacion;
+    private TableColumn<Object, String> colSituacion;
     @FXML
-    private TableColumn<String, String> colAccionAlumno;
+    private TableColumn<Object, String> colAccionAlumno;
 
     @FXML
     private void initialize() {
+
         ToggleGroup pestanas = new ToggleGroup();
         tabEntregas.setToggleGroup(pestanas);
         tabAlumnos.setToggleGroup(pestanas);
         pestanas.selectedToggleProperty().addListener((obs, anterior, actual) -> {
             if (actual == null) {
-                pestanas.selectToggle(anterior); // siempre queda una pestaña elegida
+                pestanas.selectToggle(anterior);
             } else {
                 panelEntregas.setVisible(actual == tabEntregas);
                 panelAlumnos.setVisible(actual == tabAlumnos);
             }
         });
 
-        // Renglón de ejemplo: Próximas entregas
-        texto(colAlumno, "[Alumno]");
-        texto(colLibro, "[Título del libro] · [Código]");
-        texto(colEntrega, "[Fecha]");
-        texto(colEstado, "[Estado]");
-        boton(colAccionEntrega, "Registrar devolución", () -> App.abrirModal("devolucion", tablaEntregas));
-        tablaEntregas.getItems().setAll("ejemplo");
+        // Tabla: Próximas entregas
+        columnaBoton(colAccionEntrega, "Registrar devolución");
 
-        // Renglón de ejemplo: Alumnos
-        texto(colMatricula, "[Matrícula]");
-        texto(colNombre, "[Nombre del alumno]");
-        texto(colActivos, "[N]");
-        texto(colTotal, "[N]");
-        texto(colSituacion, "[Situación]");
-        boton(colAccionAlumno, "Prestar / ver  \u203a", this::abrirAlumno);
-        tablaAlumnos.getItems().setAll("ejemplo");
+        // Tabla: Alumnos
+        columnaBoton(colAccionAlumno, "Prestar / ver  ›");
     }
 
     @FXML
@@ -98,33 +80,23 @@ public class PrestamosController {
 
     @FXML
     private void registrarAlumno() {
-        App.abrirModal("registrar-alumno", tablaAlumnos);
+        App.abrirVentana("registrar-alumno", tablaAlumnos);
     }
 
-    private void abrirAlumno() {
-        DetalleAlumnoController ficha = App.abrirModal("detalle-alumno", tablaAlumnos);
-        if (ficha.isPrestarSolicitado()) {
-            App.abrirModal("nuevo-prestamo", tablaAlumnos);
-        }
-    }
 
-    /** Columna que muestra siempre el mismo texto. */
-    private static void texto(TableColumn<String, String> columna, String texto) {
-        columna.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(texto));
-    }
-
-    /** Columna con un botón que ejecuta la acción indicada. */
-    private static void boton(TableColumn<String, String> columna, String texto, Runnable accion) {
-        columna.setCellFactory(c -> new TableCell<String, String>() {
+    private static <S> void columnaBoton(TableColumn<S, String> columna, String texto) {
+        columna.setCellFactory(c -> new TableCell<S, String>() {
             @Override
-            protected void updateItem(String fila, boolean vacia) {
-                super.updateItem(fila, vacia);
+            protected void updateItem(String valor, boolean vacia) {
+                super.updateItem(valor, vacia);
                 if (vacia) {
                     setGraphic(null);
                 } else {
                     Button boton = new Button(texto);
                     boton.getStyleClass().add("boton-tabla");
-                    boton.setOnAction(e -> accion.run());
+                    boton.setOnAction(e -> {
+                        // acción de fila
+                    });
                     setGraphic(boton);
                 }
             }

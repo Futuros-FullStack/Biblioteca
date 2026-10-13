@@ -16,15 +16,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-/**
- * Arranca la aplicación y se encarga de la navegación entre pantallas.
- * Solo navega: no hay datos ni lógica.
- */
 public class App extends Application {
 
     private static final String CSS = App.class.getResource("css/estilos.css").toExternalForm();
 
-    /** Botón de la barra que se resalta en cada pantalla. */
     private static final Map<String, String> BOTON_ACTIVO = Map.of(
             "catalogo", "#btnLibros",
             "prestamos", "#btnPrestamo",
@@ -32,14 +27,15 @@ public class App extends Application {
 
     private static Scene escenaPrincipal;
 
-    /** Rol elegido en el login: el estudiante solo ve "Libros". */
     private static boolean administrador;
 
     public static boolean esAdministrador() {
+
         return administrador;
     }
 
     public static void setAdministrador(boolean valor) {
+
         administrador = valor;
     }
 
@@ -54,7 +50,6 @@ public class App extends Application {
         stage.show();
     }
 
-    /** Cambia la pantalla de la ventana principal (por ejemplo "prestamos"). */
     public static void irA(String vista) {
         Parent raiz = cargar(vista);
         String boton = BOTON_ACTIVO.get(vista);
@@ -67,19 +62,14 @@ public class App extends Application {
         escenaPrincipal.setRoot(raiz);
     }
 
-    /**
-     * Abre un modal encima de la ventana donde está {@code desde} y espera a que se cierre.
-     *
-     * @return el controlador del modal, por si hay que configurarlo antes (ver {@link #prepararModal}).
-     */
-    public static <T> T abrirModal(String vista, Node desde) {
-        FXMLLoader loader = prepararModal(vista);
-        mostrarModal(loader, desde);
+
+    public static <T> T abrirVentana(String vista, Node desde) {
+        FXMLLoader loader = prepararVentana(vista);
+        mostrarVentana(loader, desde);
         return loader.getController();
     }
 
-    /** Carga un modal sin mostrarlo, para poder configurar su controlador antes. */
-    public static FXMLLoader prepararModal(String vista) {
+    public static FXMLLoader prepararVentana(String vista) {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("view/" + vista + ".fxml"));
         try {
             loader.load();
@@ -89,8 +79,7 @@ public class App extends Application {
         return loader;
     }
 
-    /** Muestra un modal ya cargado con {@link #prepararModal}. */
-    public static void mostrarModal(FXMLLoader loader, Node desde) {
+    public static void mostrarVentana(FXMLLoader loader, Node desde) {
         Scene escena = new Scene(loader.getRoot());
         escena.setFill(Color.TRANSPARENT);
         escena.getStylesheets().add(CSS);
@@ -101,26 +90,26 @@ public class App extends Application {
         });
 
         Window duena = desde.getScene().getWindow();
-        Stage modal = new Stage(StageStyle.TRANSPARENT);
-        modal.initOwner(duena);
-        modal.initModality(Modality.APPLICATION_MODAL);
-        modal.setScene(escena);
-        modal.setOnShown(e -> {
-            modal.setX(duena.getX() + (duena.getWidth() - modal.getWidth()) / 2);
-            modal.setY(duena.getY() + (duena.getHeight() - modal.getHeight()) / 2);
+        Stage ventana = new Stage(StageStyle.TRANSPARENT);
+        ventana.initOwner(duena);
+        ventana.initModality(Modality.APPLICATION_MODAL);
+        ventana.setScene(escena);
+        ventana.setOnShown(e -> {
+            ventana.setX(duena.getX() + (duena.getWidth() - ventana.getWidth()) / 2);
+            ventana.setY(duena.getY() + (duena.getHeight() - ventana.getHeight()) / 2);
         });
 
         Parent fondo = duena.getScene().getRoot();
         fondo.setEffect(new GaussianBlur(6));
         try {
-            modal.showAndWait();
+            ventana.showAndWait();
         } finally {
             fondo.setEffect(null);
         }
     }
 
-    /** Cierra la ventana (modal) donde está el nodo. */
     public static void cerrar(Node nodo) {
+
         nodo.getScene().getWindow().hide();
     }
 
@@ -133,6 +122,7 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
+
         launch();
     }
 }

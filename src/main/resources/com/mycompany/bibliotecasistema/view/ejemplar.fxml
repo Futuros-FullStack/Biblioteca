@@ -11,21 +11,21 @@
 <?import javafx.scene.layout.VBox?>
 
 <!-- Agregar un ejemplar a un libro, o editar uno existente (EjemplarController decide el modo). -->
-<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.bibliotecasistema.controller.EjemplarController">
-    <VBox styleClass="modal, modal-simple" prefWidth="500" maxWidth="500">
+    <VBox styleClass="ventana, ventana-simple" prefWidth="500" maxWidth="500">
 
         <VBox spacing="3">
-            <Label fx:id="lblTitulo" text="Agregar ejemplar" styleClass="modal-titulo-simple"/>
-            <Label fx:id="lblSubtitulo" text="[Título del libro] · se registrará como [Código]" styleClass="modal-subtitulo" wrapText="true"/>
+            <Label fx:id="lblTitulo" text="Agregar ejemplar" styleClass="ventana-titulo-simple"/>
+            <Label fx:id="lblSubtitulo" text="[Título del libro] · se registrará como [Código]" styleClass="ventana-subtitulo" wrapText="true"/>
         </VBox>
 
         <VBox spacing="6">
             <Label text="Ubicación" styleClass="form-etiqueta"/>
             <HBox spacing="10">
-                <ComboBox fx:id="cbPasillo" styleClass="combo-modal" maxWidth="Infinity" HBox.hgrow="ALWAYS"><items><FXCollections fx:factory="observableArrayList"><String fx:value="Pasillo A"/><String fx:value="Pasillo B"/><String fx:value="Pasillo C"/><String fx:value="Pasillo D"/><String fx:value="Pasillo E"/></FXCollections></items><value><String fx:value="Pasillo A"/></value></ComboBox>
-                <ComboBox fx:id="cbEstante" styleClass="combo-modal" maxWidth="Infinity" HBox.hgrow="ALWAYS"><items><FXCollections fx:factory="observableArrayList"><String fx:value="Estante 1"/><String fx:value="Estante 2"/><String fx:value="Estante 3"/><String fx:value="Estante 4"/><String fx:value="Estante 5"/><String fx:value="Estante 6"/></FXCollections></items><value><String fx:value="Estante 1"/></value></ComboBox>
-                <ComboBox fx:id="cbFila" styleClass="combo-modal" maxWidth="Infinity" HBox.hgrow="ALWAYS"><items><FXCollections fx:factory="observableArrayList"><String fx:value="Fila 1"/><String fx:value="Fila 2"/><String fx:value="Fila 3"/><String fx:value="Fila 4"/><String fx:value="Fila 5"/></FXCollections></items><value><String fx:value="Fila 1"/></value></ComboBox>
+                <ComboBox fx:id="cbPasillo" promptText="Pasillo" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="cbEstante" promptText="Estante" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="cbFila" promptText="Fila" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
             </HBox>
         </VBox>
 
@@ -37,11 +37,11 @@
         <!-- Solo al editar: cambiar visible a true para verlo -->
         <VBox fx:id="boxEstado" spacing="6" visible="false" managed="false">
             <Label text="Estado" styleClass="form-etiqueta"/>
-            <ComboBox fx:id="cbEstado" styleClass="combo-modal" maxWidth="Infinity"><items><FXCollections fx:factory="observableArrayList"><String fx:value="Disponible"/><String fx:value="Dañado"/><String fx:value="Extraviado"/></FXCollections></items><value><String fx:value="Disponible"/></value></ComboBox>
+            <ComboBox fx:id="cbEstado" styleClass="combo-ventana" maxWidth="Infinity"><items><FXCollections fx:factory="observableArrayList"><String fx:value="Disponible"/><String fx:value="Dañado"/><String fx:value="Extraviado"/></FXCollections></items><value><String fx:value="Disponible"/></value></ComboBox>
             <Label fx:id="lblAyudaEstado" text="Solo los ejemplares disponibles aparecen para préstamo." styleClass="mensaje-ayuda" wrapText="true" minHeight="-Infinity"/>
         </VBox>
 
-        <HBox styleClass="modal-pie-simple">
+        <HBox styleClass="ventana-pie-simple">
             <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
             <Button fx:id="btnGuardar" onAction="#cerrar" text="Guardar ejemplar" styleClass="boton-primario" defaultButton="true"/>
         </HBox>

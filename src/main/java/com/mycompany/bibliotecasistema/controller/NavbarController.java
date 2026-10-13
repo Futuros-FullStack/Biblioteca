@@ -5,9 +5,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 
-/** Barra superior: cambia de sección o regresa al login. El estudiante solo ve "Libros". */
 public class NavbarController {
 
+    @FXML
+    private Button btnLibros;
     @FXML
     private Button btnPrestamo;
     @FXML
@@ -19,32 +20,36 @@ public class NavbarController {
 
     @FXML
     private void initialize() {
-        boolean admin = App.esAdministrador();
-        btnPrestamo.setVisible(admin);
-        btnPrestamo.setManaged(admin);
-        btnInventario.setVisible(admin);
-        btnInventario.setManaged(admin);
-        lblIniciales.setText(admin ? "AD" : "ES");
-        lblNombre.setText(admin ? "Administrador" : "Estudiante");
+        boolean administrador = App.esAdministrador();
+        for (Button boton : new Button[] {btnPrestamo, btnInventario}) {
+            boton.setVisible(administrador);
+            boton.setManaged(administrador);
+        }
+        lblIniciales.setText(administrador ? "AD" : "ES");
+        lblNombre.setText(administrador ? "Administrador" : "Estudiante");
     }
 
     @FXML
     private void irALibros() {
+
         App.irA("catalogo");
     }
 
     @FXML
     private void irAPrestamos() {
+
         App.irA("prestamos");
     }
 
     @FXML
     private void irAInventario() {
+
         App.irA("inventario");
     }
 
     @FXML
     private void salir() {
+        App.setAdministrador(false);
         App.irA("login");
     }
 }

@@ -12,11 +12,11 @@
 <?import javafx.scene.layout.VBox?>
 
 <!-- Préstamo a un alumno ya elegido: se escoge el libro y el ejemplar disponible. -->
-<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
-    <VBox styleClass="modal, modal-simple" prefWidth="560" maxWidth="560">
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+    <VBox styleClass="ventana, ventana-simple" prefWidth="560" maxWidth="560">
 
-        <Label text="Préstamo" styleClass="modal-titulo-simple"/>
+        <Label text="Préstamo" styleClass="ventana-titulo-simple"/>
 
         <GridPane hgap="16" vgap="6">
             <columnConstraints>
@@ -24,16 +24,16 @@
                 <ColumnConstraints percentWidth="50"/>
             </columnConstraints>
             <Label text="Nombre del alumno" styleClass="form-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtNombre" text="[Nombre del alumno]" styleClass="campo-modal, campo-solo-lectura" editable="false"
+            <TextField fx:id="txtNombre" text="[Nombre del alumno]" styleClass="campo-ventana, campo-solo-lectura" editable="false"
                        focusTraversable="false" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
             <Label text="Matrícula" styleClass="form-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-            <TextField fx:id="txtMatricula" text="[Matrícula]" styleClass="campo-modal, campo-solo-lectura" editable="false"
+            <TextField fx:id="txtMatricula" text="[Matrícula]" styleClass="campo-ventana, campo-solo-lectura" editable="false"
                        focusTraversable="false" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
         </GridPane>
 
         <VBox spacing="6">
             <Label text="Libro y ejemplar" styleClass="form-etiqueta"/>
-            <ComboBox fx:id="cbEjemplar" styleClass="combo-modal" maxWidth="Infinity"
+            <ComboBox fx:id="cbEjemplar" styleClass="combo-ventana" maxWidth="Infinity"
                       promptText="Elige el libro"/>
             <Label fx:id="lblAyudaEjemplar" text="Solo aparecen ejemplares disponibles."
                    styleClass="mensaje-ayuda"/>
@@ -55,7 +55,7 @@
                styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"
                visible="false" managed="false"/>
 
-        <HBox styleClass="modal-pie-simple">
+        <HBox styleClass="ventana-pie-simple">
             <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
             <Button fx:id="btnRegistrar" onAction="#cerrar" text="Registrar préstamo" styleClass="boton-primario"/>
         </HBox>

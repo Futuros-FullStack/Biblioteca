@@ -13,13 +13,13 @@
     <HBox styleClass="tarjeta-portada" VBox.vgrow="ALWAYS">
         <Region styleClass="tarjeta-lomo"/>
         <VBox styleClass="tarjeta-portada-texto" HBox.hgrow="ALWAYS">
-            <Label fx:id="lblTitulo" text="[Título del libro]" styleClass="tarjeta-titulo" wrapText="true"/>
+            <Label fx:id="lblTitulo" text="Título del libro" styleClass="tarjeta-titulo" wrapText="true"/>
             <Region VBox.vgrow="ALWAYS"/>
-            <Label fx:id="lblCiudadAnio" text="[Ciudad] - [Año]" styleClass="tarjeta-ciudad"/>
+            <Label fx:id="lblCiudadAnio" text="Ciudad - Año" styleClass="tarjeta-ciudad"/>
         </VBox>
     </HBox>
 
     <HBox styleClass="tarjeta-pie">
-        <Label fx:id="lblAutores" text="[Autores]" styleClass="tarjeta-autores" wrapText="true"/>
+        <Label fx:id="lblAutores" text="Autores" styleClass="tarjeta-autores" wrapText="true"/>
     </HBox>
 </VBox>

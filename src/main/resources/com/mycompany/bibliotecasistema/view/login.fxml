@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -16,10 +17,12 @@
     <VBox fx:id="tarjeta" styleClass="login-tarjeta" alignment="TOP_CENTER"
           minWidth="450" prefWidth="450" maxWidth="450" minHeight="330" maxHeight="-Infinity">
 
+        <Label text="UNIVERSIDAD AUTÓNOMA DE CHIAPAS" styleClass="login-institucion"/>
         <Label text="BIBLIOTECA" styleClass="login-titulo"/>
-        <Label text="FACULTAD DE NEGOCIOS" styleClass="login-subtitulo">
-            <VBox.margin><Insets bottom="18"/></VBox.margin>
-        </Label>
+        <Label text="FACULTAD DE NEGOCIOS" styleClass="login-subtitulo"/>
+        <Region styleClass="login-filete">
+            <VBox.margin><Insets top="8" bottom="14"/></VBox.margin>
+        </Region>
 
         <Label fx:id="lblEligeRol" text="Elige tu rol:" styleClass="login-etiqueta"
                maxWidth="Infinity"/>
@@ -45,7 +48,7 @@
         <Label fx:id="lblError" text="Usuario o contraseña incorrectos." styleClass="mensaje-error-login"
                wrapText="true" maxWidth="Infinity" visible="false" managed="false"/>
 
-        <Button fx:id="btnIngresar" onAction="#ingresar" text="Ingresar" styleClass="boton-login"
+        <Button fx:id="btnIngresar" onAction="#ingresar" text="Ingresar" styleClass="boton-login" defaultButton="true"
                 maxWidth="Infinity">
             <VBox.margin><Insets top="10"/></VBox.margin>
         </Button>

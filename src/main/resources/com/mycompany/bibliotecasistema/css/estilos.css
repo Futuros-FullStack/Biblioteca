@@ -12,7 +12,7 @@
     -color-primario-claro:  #4A6FB5;
     -color-input-login:     #00245C;
     -color-busqueda:        #B9C6E4;
-    -color-fondo:           #F6F8FC;
+    -color-fondo:           #F4F5F8;
     -color-borde:           #9AABD1;
     -color-texto:           #1E2A4A;
     -color-texto-suave:     #7B8BB8;
@@ -20,6 +20,9 @@
     -color-exito:           #1E7B34;
     -color-alerta:          #B3261E;
     -color-blanco:          #FFFFFF;
+    -color-dorado:          #B8963E;
+    -color-dorado-claro:    #E6D3A1;
+    -color-dorado-suave:    #FBF6E8;
 
     /* Tablas, pestañas y avisos (Préstamos / Inventario) */
     -color-fondo-suave:     #EDF1FA;
@@ -49,11 +52,11 @@
    JavaFX a tamaños grandes; los títulos grandes usan Segoe UI Bold. */
 .fuente-inter .login-titulo,
 .fuente-inter .titulo-seccion,
-.fuente-inter .modal-titulo,
+.fuente-inter .ventana-titulo,
 .fuente-inter .placeholder-titulo,
-.fuente-inter .modal-titulo-simple,
+.fuente-inter .ventana-titulo-simple,
 .fuente-inter .alumno-nombre {
-    -fx-font-family: "Segoe UI";
+    -fx-font-family: "Georgia";
 }
 
 .label {
@@ -447,14 +450,14 @@
 }
 
 /* ---------------------------------------------------------------------
-   Modales
+   Ventanas emergentes
    --------------------------------------------------------------------- */
-.modal-contenedor {
+.ventana-contenedor {
     -fx-background-color: transparent;
     -fx-padding: 24;
 }
 
-.modal {
+.ventana {
     -fx-background-color: -color-blanco;
     -fx-background-radius: 14;
     -fx-border-color: -color-borde;
@@ -463,13 +466,13 @@
     -fx-effect: dropshadow(gaussian, -color-sombra-fuerte, 24, 0, 0, 8);
 }
 
-.modal-encabezado {
+.ventana-encabezado {
     -fx-background-color: -color-primario;
     -fx-background-radius: 14 14 0 0;
     -fx-min-height: 104;
 }
 
-.modal-lomo {
+.ventana-lomo {
     -fx-background-color: -color-primario-oscuro;
     -fx-background-radius: 14 0 0 0;
     -fx-min-width: 30;
@@ -477,31 +480,31 @@
     -fx-max-width: 30;
 }
 
-.modal-titulo {
+.ventana-titulo {
     -fx-text-fill: -color-blanco;
     -fx-font-size: 26px;
     -fx-font-weight: bold;
     -fx-padding: 22 28;
 }
 
-.modal-titulo-simple {
+.ventana-titulo-simple {
     -fx-text-fill: -color-primario;
     -fx-font-size: 24px;
     -fx-font-weight: bold;
 }
 
-.modal-cuerpo {
+.ventana-cuerpo {
     -fx-padding: 22 28 8 28;
     -fx-spacing: 14;
 }
 
-.modal-pie {
+.ventana-pie {
     -fx-padding: 14 28 22 28;
     -fx-spacing: 12;
     -fx-alignment: center-right;
 }
 
-.modal-paso {
+.ventana-paso {
     -fx-text-fill: -color-texto-suave;
     -fx-font-size: 12px;
 }
@@ -529,8 +532,8 @@
     -fx-font-weight: bold;
 }
 
-.scroll-modal,
-.scroll-modal > .viewport {
+.scroll-ventana,
+.scroll-ventana > .viewport {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-padding: 0;
@@ -596,7 +599,7 @@
     -fx-font-weight: bold;
 }
 
-.campo-modal,
+.campo-ventana,
 .date-picker > .text-field {
     -fx-background-color: -color-blanco;
     -fx-background-radius: 10;
@@ -612,7 +615,7 @@
     -fx-font-size: 14px;
 }
 
-.campo-modal:focused,
+.campo-ventana:focused,
 .date-picker > .text-field:focused {
     -fx-border-color: -color-primario;
 }
@@ -929,19 +932,19 @@
 }
 
 /* ---------------------------------------------------------------------
-   Modales sin encabezado azul (formularios de Préstamos e Inventario)
+   Ventanas emergentes sin encabezado azul (formularios de Préstamos e Inventario)
    --------------------------------------------------------------------- */
-.modal-simple {
+.ventana-simple {
     -fx-padding: 26 30 24 30;
     -fx-spacing: 16;
 }
 
-.modal-subtitulo {
+.ventana-subtitulo {
     -fx-text-fill: -color-texto-suave;
     -fx-font-size: 13px;
 }
 
-.modal-pie-simple {
+.ventana-pie-simple {
     -fx-spacing: 12;
     -fx-alignment: center-right;
     -fx-padding: 6 0 0 0;
@@ -981,7 +984,7 @@
 .indicador-retraso  { -fx-text-fill: -color-alerta; }
 
 /* ComboBox de formularios */
-.combo-modal {
+.combo-ventana {
     -fx-background-color: -color-blanco;
     -fx-background-radius: 10;
     -fx-border-color: -color-borde;
@@ -992,34 +995,34 @@
     -fx-cursor: hand;
 }
 
-.combo-modal:focused,
-.combo-modal:showing {
+.combo-ventana:focused,
+.combo-ventana:showing {
     -fx-border-color: -color-primario;
 }
 
-.combo-modal:disabled {
+.combo-ventana:disabled {
     -fx-opacity: 0.7;
 }
 
-.combo-modal > .list-cell {
+.combo-ventana > .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -color-texto;
     -fx-padding: 0 12;
     -fx-font-size: 13px;
 }
 
-.combo-modal > .arrow-button {
+.combo-ventana > .arrow-button {
     -fx-background-color: transparent;
     -fx-padding: 0 12 0 6;
 }
 
-.combo-modal > .arrow-button > .arrow {
+.combo-ventana > .arrow-button > .arrow {
     -fx-background-color: -color-primario;
     -fx-shape: "M 0 0 L 12 0 L 6 7 Z";
     -fx-padding: 3 5;
 }
 
-.combo-modal .combo-box-popup > .list-view {
+.combo-ventana .combo-box-popup > .list-view {
     -fx-background-color: -color-blanco;
     -fx-background-radius: 8;
     -fx-border-color: -color-borde;
@@ -1028,7 +1031,7 @@
     -fx-effect: dropshadow(gaussian, -color-sombra, 10, 0, 0, 3);
 }
 
-.combo-modal .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+.combo-ventana .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -color-texto;
     -fx-padding: 7 10;
@@ -1036,14 +1039,14 @@
     -fx-font-size: 13px;
 }
 
-.combo-modal .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
-.combo-modal .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
+.combo-ventana .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
+.combo-ventana .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
     -fx-background-color: -color-fondo-suave;
     -fx-text-fill: -color-primario;
 }
 
 /* Área de texto */
-.area-modal {
+.area-ventana {
     -fx-background-color: -color-borde, -color-blanco;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 10, 9;
@@ -1053,47 +1056,47 @@
     -fx-font-size: 13px;
 }
 
-.area-modal:focused {
+.area-ventana:focused {
     -fx-background-color: -color-primario, -color-blanco;
 }
 
-.area-modal .content {
+.area-ventana .content {
     -fx-background-color: transparent;
     -fx-padding: 8 12;
 }
 
-.area-modal > .scroll-pane,
-.area-modal > .scroll-pane > .viewport {
+.area-ventana > .scroll-pane,
+.area-ventana > .scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 
 /* Casillas de verificación */
-.check-modal {
+.check-ventana {
     -fx-text-fill: -color-texto;
     -fx-font-size: 13px;
     -fx-cursor: hand;
 }
 
-.check-modal > .box {
+.check-ventana > .box {
     -fx-background-color: -color-borde, -color-blanco;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4, 3;
     -fx-padding: 3;
 }
 
-.check-modal:selected > .box {
+.check-ventana:selected > .box {
     -fx-background-color: -color-primario;
     -fx-background-insets: 0;
 }
 
-.check-modal:selected > .box > .mark {
+.check-ventana:selected > .box > .mark {
     -fx-background-color: -color-blanco;
 }
 
 /* ---------------------------------------------------------------------
    Ficha del alumno
    --------------------------------------------------------------------- */
-.modal-ficha {
+.ventana-ficha {
     -fx-padding: 14;
 }
 
@@ -1204,4 +1207,329 @@
 .scroll-bar > .decrement-button > .decrement-arrow {
     -fx-shape: " ";
     -fx-padding: 0;
+}
+
+/* =====================================================================
+   Refinamiento institucional/universitario
+   Azul UNACH + dorado académico, títulos en serif, superficies sobrias.
+   ===================================================================== */
+
+.login-titulo,
+.titulo-seccion,
+.ventana-titulo,
+.ventana-titulo-simple,
+.placeholder-titulo,
+.alumno-nombre,
+.navbar-marca,
+.tarjeta-titulo,
+.subtitulo {
+    -fx-font-family: "Georgia";
+}
+
+/* Login: fondo con degradado y tarjeta con filete dorado */
+.login-fondo {
+    -fx-background-color: linear-gradient(to bottom right, -color-primario-oscuro 0%, -color-primario 100%);
+}
+
+.login-tarjeta {
+    -fx-background-color: -color-primario-oscuro;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-dorado transparent transparent transparent;
+    -fx-border-width: 4 0 0 0;
+    -fx-border-radius: 6;
+    -fx-padding: 34 44 36 44;
+}
+
+.login-titulo {
+    -fx-font-size: 32px;
+}
+
+.login-subtitulo {
+    -fx-text-fill: -color-dorado-claro;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.login-institucion {
+    -fx-text-fill: -color-blanco-55;
+    -fx-font-size: 11px;
+}
+
+.login-filete {
+    -fx-background-color: -color-dorado;
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-min-width: 48;
+    -fx-pref-width: 48;
+    -fx-max-width: 48;
+}
+
+.login-etiqueta {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-dorado-claro;
+}
+
+.input-login,
+.combo-login {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.input-login:focused,
+.combo-login:focused,
+.combo-login:showing {
+    -fx-border-color: -color-dorado;
+}
+
+.boton-login {
+    -fx-background-color: -color-dorado;
+    -fx-background-radius: 4;
+    -fx-text-fill: -color-primario-oscuro;
+}
+
+.boton-login:hover {
+    -fx-background-color: -color-dorado-claro;
+}
+
+.mensaje-error-login {
+    -fx-background-radius: 4;
+}
+
+/* Botones generales */
+.boton-primario,
+.boton-secundario {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.boton-secundario {
+    -fx-border-width: 1;
+}
+
+/* Navbar: barra azul con filete dorado inferior */
+.navbar {
+    -fx-background-color: -color-dorado, -color-primario;
+    -fx-background-insets: 0, 0 0 3 0;
+    -fx-min-height: 76;
+    -fx-pref-height: 76;
+    -fx-effect: dropshadow(gaussian, -color-sombra, 8, 0, 0, 2);
+}
+
+.nav-boton {
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 3 0;
+    -fx-padding: 10 16 7 16;
+    -fx-font-size: 13px;
+}
+
+.nav-boton.activo {
+    -fx-background-color: -color-blanco-12;
+    -fx-border-color: transparent transparent -color-dorado transparent;
+}
+
+.avatar {
+    -fx-background-color: -color-dorado;
+}
+
+.avatar-iniciales {
+    -fx-text-fill: -color-primario-oscuro;
+}
+
+.boton-salir {
+    -fx-border-color: -color-blanco-55;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+/* Contenido */
+.titulo-seccion {
+    -fx-effect: null;
+    -fx-font-size: 30px;
+}
+
+.campo-busqueda {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 4;
+    -fx-border-color: -color-borde;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-pref-height: 42;
+    -fx-min-height: 42;
+}
+
+.campo-busqueda:focused {
+    -fx-border-color: -color-dorado;
+    -fx-border-width: 1.5;
+}
+
+/* Tarjeta de libro: lomo dorado, estilo ficha bibliográfica */
+.tarjeta-libro {
+    -fx-background-radius: 4;
+    -fx-border-color: -color-linea;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(gaussian, -color-sombra, 8, 0, 0, 2);
+}
+
+.tarjeta-libro:hover {
+    -fx-scale-x: 1.015;
+    -fx-scale-y: 1.015;
+    -fx-border-color: -color-dorado;
+}
+
+.tarjeta-portada {
+    -fx-background-color: linear-gradient(to bottom right, -color-primario 0%, -color-primario-oscuro 100%);
+    -fx-background-radius: 3 3 0 0;
+}
+
+.tarjeta-lomo {
+    -fx-background-color: -color-dorado;
+    -fx-background-radius: 3 0 0 0;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+}
+
+.tarjeta-ciudad {
+    -fx-text-fill: -color-dorado-claro;
+}
+
+.tarjeta-pie {
+    -fx-background-radius: 0 0 3 3;
+    -fx-border-color: -color-dorado transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.tarjeta-autores {
+    -fx-text-fill: -color-texto;
+    -fx-font-style: italic;
+}
+
+/* Ventanas emergentes */
+.ventana {
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -color-linea;
+}
+
+.ventana-encabezado {
+    -fx-background-color: linear-gradient(to right, -color-primario-oscuro 0%, -color-primario 100%);
+    -fx-background-radius: 6 6 0 0;
+}
+
+.ventana-lomo {
+    -fx-background-color: -color-dorado;
+    -fx-background-radius: 6 0 0 0;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+}
+
+.dato-etiqueta {
+    -fx-font-size: 12px;
+}
+
+.ejemplar-tarjeta {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: -color-linea;
+}
+
+.boton-prestar {
+    -fx-background-radius: 4;
+}
+
+.campo-ventana,
+.date-picker > .text-field,
+.combo-ventana {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.campo-ventana:focused,
+.date-picker > .text-field:focused,
+.combo-ventana:focused,
+.combo-ventana:showing {
+    -fx-border-color: -color-dorado;
+}
+
+.date-picker > .text-field {
+    -fx-background-radius: 4 0 0 4;
+    -fx-border-radius: 4 0 0 4;
+}
+
+.date-picker > .arrow-button {
+    -fx-background-radius: 0 4 4 0;
+}
+
+.area-ventana {
+    -fx-background-radius: 4, 3;
+}
+
+.area-ventana:focused {
+    -fx-background-color: -color-dorado, -color-blanco;
+}
+
+.estado-alumno {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+/* Tablas, pestañas y fichas */
+.pestana {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.tabla {
+    -fx-background-radius: 6, 5;
+    -fx-effect: dropshadow(gaussian, -color-sombra, 6, 0, 0, 1);
+}
+
+.tabla > .column-header-background {
+    -fx-background-color: -color-dorado, -color-fondo-suave;
+    -fx-background-insets: 0, 0 0 2 0;
+    -fx-background-radius: 5 5 0 0;
+}
+
+.tabla .column-header > .label {
+    -fx-text-fill: -color-primario;
+    -fx-font-size: 11px;
+}
+
+.boton-tabla,
+.boton-tabla-secundario,
+.boton-icono {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.alumno-encabezado {
+    -fx-background-color: linear-gradient(to right, -color-primario-oscuro 0%, -color-primario 100%);
+    -fx-background-radius: 6;
+    -fx-border-color: -color-dorado transparent transparent transparent;
+    -fx-border-width: 3 0 0 0;
+    -fx-border-radius: 6;
+}
+
+.caja-info {
+    -fx-background-radius: 4;
+    -fx-background-color: -color-dorado-suave;
+    -fx-border-color: -color-dorado-claro;
+    -fx-border-radius: 4;
+}
+
+.aviso-adeudo {
+    -fx-background-radius: 4;
+}
+
+.alerta > .header-panel {
+    -fx-background-color: -color-primario-oscuro;
+}
+
+.alerta > .button-bar > .container > .button {
+    -fx-background-radius: 4;
 }

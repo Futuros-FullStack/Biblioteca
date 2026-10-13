@@ -5,15 +5,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 
-/**
- * Controlador compartido por los modales que solo se cierran
- * (detalle del libro, devolución, registrar alumno, notificar, préstamo y agregar libro).
- * Tanto "Cancelar" como el botón principal cierran el modal.
- */
-public class ModalController {
+
+public class VentanaEmergenteController {
 
     @FXML
     private void cerrar(ActionEvent evento) {
+
         App.cerrar((Node) evento.getSource());
+    }
+
+    @FXML
+    private void guardar() {
+        // Implementar lógica de Guardar (alumno, libro)
     }
 }

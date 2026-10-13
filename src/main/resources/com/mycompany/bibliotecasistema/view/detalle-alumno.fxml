@@ -11,9 +11,9 @@
 <?import javafx.scene.layout.VBox?>
 
 <!-- Ficha del alumno: datos, préstamos activos y acciones (notificar / prestar). -->
-<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.bibliotecasistema.controller.DetalleAlumnoController">
-    <VBox styleClass="modal, modal-ficha" prefWidth="560" maxWidth="560">
+    <VBox styleClass="ventana, ventana-ficha" prefWidth="560" maxWidth="560">
 
         <HBox styleClass="alumno-encabezado">
             <StackPane styleClass="avatar">
@@ -44,7 +44,7 @@
             </GridPane>
 
             <Label text="Préstamos activos" styleClass="subtitulo"/>
-            <ScrollPane styleClass="scroll-modal" fitToWidth="true" hbarPolicy="NEVER" maxHeight="220">
+            <ScrollPane styleClass="scroll-ventana" fitToWidth="true" hbarPolicy="NEVER" maxHeight="220">
                 <VBox fx:id="listaPrestamos" spacing="8">
                     <HBox styleClass="ejemplar-tarjeta">
                         <VBox spacing="2">

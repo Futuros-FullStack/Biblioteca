@@ -8,13 +8,13 @@
 <?import javafx.scene.layout.VBox?>
 
 <!-- Recordatorio al alumno por correo. -->
-<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
-    <VBox styleClass="modal, modal-simple" prefWidth="540" maxWidth="540">
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+    <VBox styleClass="ventana, ventana-simple" prefWidth="540" maxWidth="540">
 
         <VBox spacing="3">
-            <Label fx:id="lblTitulo" text="Notificar a [Nombre del alumno]" styleClass="modal-titulo-simple" wrapText="true"/>
-            <Label text="Recordatorio de entrega de sus préstamos activos." styleClass="modal-subtitulo"/>
+            <Label fx:id="lblTitulo" text="Notificar a [Nombre del alumno]" styleClass="ventana-titulo-simple" wrapText="true"/>
+            <Label text="Recordatorio de entrega de sus préstamos activos." styleClass="ventana-subtitulo"/>
         </VBox>
 
         <HBox styleClass="caja-info">
@@ -24,13 +24,13 @@
 
         <VBox spacing="6">
             <Label text="Mensaje" styleClass="form-etiqueta"/>
-            <TextArea fx:id="txtMensaje" styleClass="area-modal" prefRowCount="6" wrapText="true"
+            <TextArea fx:id="txtMensaje" styleClass="area-ventana" prefRowCount="6" wrapText="true"
                       text="Hola [Nombre], te recordamos tus préstamos en la Biblioteca de la Facultad de Negocios:&#10;· [Título del libro] — vence el [Fecha]&#10;Gracias."/>
             <Label fx:id="lblAyuda" text="Puedes editar el mensaje antes de enviarlo." styleClass="mensaje-ayuda"
                    wrapText="true"/>
         </VBox>
 
-        <HBox styleClass="modal-pie-simple">
+        <HBox styleClass="ventana-pie-simple">
             <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
             <Button fx:id="btnEnviar" onAction="#cerrar" text="Enviar aviso" styleClass="boton-primario"/>
         </HBox>

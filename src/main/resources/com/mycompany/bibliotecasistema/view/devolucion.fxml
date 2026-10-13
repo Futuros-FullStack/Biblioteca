@@ -13,14 +13,14 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Modal para cerrar un préstamo: fecha real, estado del ejemplar y observaciones. -->
-<StackPane styleClass="modal-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.ModalController">
-    <VBox styleClass="modal, modal-simple" prefWidth="540" maxWidth="540">
+<!-- Ventana emergente para cerrar un préstamo: fecha real, estado del ejemplar y observaciones. -->
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+    <VBox styleClass="ventana, ventana-simple" prefWidth="540" maxWidth="540">
 
         <VBox spacing="3">
-            <Label text="Registrar devolución" styleClass="modal-titulo-simple"/>
-            <Label fx:id="lblSubtitulo" text="[Título del libro] · [Código] · [Alumno]" styleClass="modal-subtitulo" wrapText="true"/>
+            <Label text="Registrar devolución" styleClass="ventana-titulo-simple"/>
+            <Label fx:id="lblSubtitulo" text="[Título del libro] · [Código] · [Alumno]" styleClass="ventana-subtitulo" wrapText="true"/>
         </VBox>
 
         <HBox styleClass="caja-info">
@@ -42,7 +42,7 @@
 
             <Label text="Estado del ejemplar" styleClass="form-etiqueta"
                    GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-            <ComboBox fx:id="cbEstado" styleClass="combo-modal" maxWidth="Infinity"
+            <ComboBox fx:id="cbEstado" styleClass="combo-ventana" maxWidth="Infinity"
                       GridPane.rowIndex="1" GridPane.columnIndex="1">
                 <items><FXCollections fx:factory="observableArrayList"><String fx:value="Buen estado"/><String fx:value="Dañado"/><String fx:value="Extraviado"/></FXCollections></items><value><String fx:value="Buen estado"/></value>
             </ComboBox>
@@ -55,11 +55,11 @@
                 <Label text="Observaciones" styleClass="form-etiqueta"/>
                 <Label text="(opcional)" styleClass="etiqueta-opcional"/>
             </HBox>
-            <TextArea fx:id="txtObservaciones" styleClass="area-modal" prefRowCount="2" wrapText="true"
+            <TextArea fx:id="txtObservaciones" styleClass="area-ventana" prefRowCount="2" wrapText="true"
                       promptText="Por ejemplo: trae la portada rayada"/>
         </VBox>
 
-        <HBox styleClass="modal-pie-simple">
+        <HBox styleClass="ventana-pie-simple">
             <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
             <Button fx:id="btnRegistrar" onAction="#cerrar" text="Registrar devolución" styleClass="boton-primario"/>
         </HBox>
