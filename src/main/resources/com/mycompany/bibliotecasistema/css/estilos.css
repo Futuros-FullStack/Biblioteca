@@ -570,8 +570,8 @@
 .estado-disponible { -fx-text-fill: -color-exito; }
 .estado-prestado   { -fx-text-fill: -color-primario-claro; }
 .estado-vencido    { -fx-text-fill: -color-alerta; }
-.estado-danado     { -fx-text-fill: -color-texto-suave; }
-.estado-extraviado { -fx-text-fill: -color-alerta; }
+.estado-reparacion { -fx-text-fill: -color-texto-suave; }
+.estado-perdido    { -fx-text-fill: -color-alerta; }
 
 .boton-prestar {
     -fx-background-color: -color-primario;
@@ -848,8 +848,8 @@
 .estado-disponible > .punto { -fx-background-color: -color-exito; }
 .estado-prestado > .punto   { -fx-background-color: -color-primario-claro; }
 .estado-vencido > .punto,
-.estado-extraviado > .punto { -fx-background-color: -color-alerta; }
-.estado-danado > .punto     { -fx-background-color: -color-texto-suave; }
+.estado-perdido > .punto { -fx-background-color: -color-alerta; }
+.estado-reparacion > .punto { -fx-background-color: -color-texto-suave; }
 
 /* Botones dentro de las tablas */
 .boton-tabla,
@@ -1408,6 +1408,20 @@
     -fx-font-style: italic;
 }
 
+/* Portada del libro: vista previa en el formulario e imagen en la tarjeta */
+.portada-vista-previa {
+    -fx-background-color: -color-blanco;
+    -fx-border-color: -color-linea;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-min-width: 64;
+    -fx-min-height: 84;
+}
+
+.tarjeta-imagen {
+    -fx-background-radius: 3 3 0 0;
+}
+
 /* Ventanas emergentes */
 .ventana {
     -fx-background-radius: 6;
@@ -1453,6 +1467,28 @@
 .date-picker > .text-field:focused,
 .combo-ventana:focused,
 .combo-ventana:showing {
+    -fx-border-color: -color-dorado;
+}
+
+/* Campo de texto de varias lineas (descripcion del libro) */
+.area-ventana {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 4;
+    -fx-border-color: -color-borde;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-text-fill: -color-texto;
+    -fx-prompt-text-fill: -color-texto-suave;
+    -fx-highlight-fill: -color-primario-claro;
+}
+
+.area-ventana .content {
+    -fx-background-color: -color-blanco;
+    -fx-background-radius: 4;
+    -fx-padding: 6 10;
+}
+
+.area-ventana:focused {
     -fx-border-color: -color-dorado;
 }
 

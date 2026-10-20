@@ -33,7 +33,7 @@
 
         <!-- Solo para Administrador -->
         <VBox fx:id="boxCredenciales" spacing="8">
-            <Label text="Nombre de usuario o correo" styleClass="login-etiqueta">
+            <Label text="Correo" styleClass="login-etiqueta">
                 <VBox.margin><Insets top="6"/></VBox.margin>
             </Label>
             <TextField fx:id="txtUsuario" styleClass="input-login"

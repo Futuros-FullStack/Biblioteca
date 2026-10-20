@@ -9,14 +9,14 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Ventana emergente para dar de alta a un alumno antes de prestarle. -->
+<!-- Ventana emergente para dar de alta a un alumno antes de prestarle, o para editar uno existente. -->
 <StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+           fx:controller="com.mycompany.bibliotecasistema.controller.RegistrarAlumnoController">
     <VBox styleClass="ventana, ventana-simple" prefWidth="520" maxWidth="520">
 
         <VBox spacing="3">
-            <Label text="Registrar alumno" styleClass="ventana-titulo-simple"/>
-            <Label text="Después lo encontrarás en la lista para asignarle su préstamo."
+            <Label fx:id="lblTitulo" text="Registrar alumno" styleClass="ventana-titulo-simple"/>
+            <Label fx:id="lblSubtitulo" text="Después lo encontrarás en la lista para asignarle su préstamo."
                    styleClass="ventana-subtitulo"/>
         </VBox>
 
@@ -35,11 +35,11 @@
                    style="-fx-padding: 8 0 0 0;"/>
             <TextField fx:id="txtMatricula" styleClass="campo-ventana" promptText="9 dígitos"
                        GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <HBox spacing="4" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-padding: 8 0 0 0;">
+            <HBox visible="false" managed="false" spacing="4" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-padding: 8 0 0 0;">
                 <Label text="Teléfono" styleClass="form-etiqueta"/>
                 <Label text="(opcional)" styleClass="etiqueta-opcional"/>
             </HBox>
-            <TextField fx:id="txtTelefono" styleClass="campo-ventana" promptText="10 dígitos"
+            <TextField fx:id="txtTelefono" visible="false" managed="false" styleClass="campo-ventana" promptText="10 dígitos"
                        GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
             <Label text="Correo institucional" styleClass="form-etiqueta" GridPane.rowIndex="4"
@@ -52,7 +52,7 @@
 
         <HBox styleClass="ventana-pie-simple">
             <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
-            <Button text="Guardar alumno" onAction="#guardar" styleClass="boton-primario" defaultButton="true"/>
+            <Button fx:id="btnGuardar" text="Guardar alumno" onAction="#guardar" styleClass="boton-primario" defaultButton="true"/>
         </HBox>
     </VBox>
 </StackPane>

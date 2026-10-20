@@ -13,12 +13,9 @@
 <!-- Ficha del alumno: datos, préstamos activos y acciones (notificar / prestar). -->
 <StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.bibliotecasistema.controller.DetalleAlumnoController">
-    <VBox styleClass="ventana, ventana-ficha" prefWidth="560" maxWidth="560">
+    <VBox styleClass="ventana, ventana-ficha" prefWidth="680" maxWidth="680">
 
         <HBox styleClass="alumno-encabezado">
-            <StackPane styleClass="avatar">
-                <Label fx:id="lblIniciales" text="AL" styleClass="avatar-iniciales"/>
-            </StackPane>
             <VBox spacing="2" alignment="CENTER_LEFT">
                 <Label fx:id="lblNombre" text="[Nombre del alumno]" styleClass="alumno-nombre" wrapText="true"/>
                 <Label fx:id="lblMatricula" text="Matrícula [Matrícula]" styleClass="alumno-matricula"/>
@@ -33,8 +30,8 @@
                 </columnConstraints>
                 <Label text="Correo" styleClass="ficha-etiqueta" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <Label fx:id="lblCorreo" text="[Correo]" styleClass="ficha-valor" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                <Label text="Teléfono" styleClass="ficha-etiqueta" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <Label fx:id="lblTelefono" text="[Teléfono]" styleClass="ficha-valor" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Teléfono" visible="false" managed="false" styleClass="ficha-etiqueta" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label fx:id="lblTelefono" visible="false" managed="false" text="[Teléfono]" styleClass="ficha-valor" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
                 <Label text="Situación" styleClass="ficha-etiqueta" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                 <StackPane fx:id="cajaSituacion" alignment="CENTER_LEFT" GridPane.rowIndex="2" GridPane.columnIndex="1">
                     <Label text="Al corriente" styleClass="estado, estado-disponible" graphicTextGap="7">
@@ -44,7 +41,7 @@
             </GridPane>
 
             <Label text="Préstamos activos" styleClass="subtitulo"/>
-            <ScrollPane styleClass="scroll-ventana" fitToWidth="true" hbarPolicy="NEVER" maxHeight="220">
+            <ScrollPane styleClass="scroll-ventana" fitToWidth="true" hbarPolicy="NEVER" prefHeight="300" minHeight="200" maxHeight="360">
                 <VBox fx:id="listaPrestamos" spacing="8">
                     <HBox styleClass="ejemplar-tarjeta">
                         <VBox spacing="2">
@@ -60,17 +57,14 @@
             </ScrollPane>
 
             <Label fx:id="lblAviso" text="Debe devolver su libro vencido antes de llevarse otro."
-                   styleClass="aviso-adeudo" maxWidth="Infinity" wrapText="true"
+                   styleClass="aviso-adeudo" maxWidth="Infinity" wrapText="true" minHeight="-Infinity"
                    visible="false" managed="false"/>
         </VBox>
 
         <HBox styleClass="ficha-pie">
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
-            <Button fx:id="btnNotificar" onAction="#notificar" text="Notificar" styleClass="boton-secundario">
-                <graphic><Region styleClass="icono, icono-campana"/></graphic>
-            </Button>
-            <Button fx:id="btnPrestar" onAction="#prestar" text="Realizar otro préstamo" styleClass="boton-primario"/>
+            <Button fx:id="btnPrestar" onAction="#prestar" text="Realizar préstamo" styleClass="boton-primario"/>
         </HBox>
     </VBox>
 </StackPane>

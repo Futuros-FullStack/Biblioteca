@@ -35,7 +35,6 @@ public class App extends Application {
     }
 
     public static void setAdministrador(boolean valor) {
-
         administrador = valor;
     }
 
@@ -109,7 +108,6 @@ public class App extends Application {
     }
 
     public static void cerrar(Node nodo) {
-
         nodo.getScene().getWindow().hide();
     }
 
@@ -122,7 +120,6 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-
         launch();
     }
 }

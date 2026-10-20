@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -10,7 +11,11 @@
       xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.bibliotecasistema.controller.TarjetaLibroController">
 
-    <HBox styleClass="tarjeta-portada" VBox.vgrow="ALWAYS">
+    <!-- Solo se muestra cuando el libro tiene imagen de portada -->
+    <ImageView fx:id="imgPortada" fitWidth="265" fitHeight="188" preserveRatio="false"
+               visible="false" managed="false" styleClass="tarjeta-imagen"/>
+
+    <HBox fx:id="portadaTexto" styleClass="tarjeta-portada" VBox.vgrow="ALWAYS">
         <Region styleClass="tarjeta-lomo"/>
         <VBox styleClass="tarjeta-portada-texto" HBox.hgrow="ALWAYS">
             <Label fx:id="lblTitulo" text="Título del libro" styleClass="tarjeta-titulo" wrapText="true"/>

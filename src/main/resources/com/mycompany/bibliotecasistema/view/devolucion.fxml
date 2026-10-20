@@ -15,7 +15,7 @@
 
 <!-- Ventana emergente para cerrar un préstamo: fecha real, estado del ejemplar y observaciones. -->
 <StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+           fx:controller="com.mycompany.bibliotecasistema.controller.DevolucionController">
     <VBox styleClass="ventana, ventana-simple" prefWidth="540" maxWidth="540">
 
         <VBox spacing="3">
@@ -44,9 +44,9 @@
                    GridPane.rowIndex="0" GridPane.columnIndex="1"/>
             <ComboBox fx:id="cbEstado" styleClass="combo-ventana" maxWidth="Infinity"
                       GridPane.rowIndex="1" GridPane.columnIndex="1">
-                <items><FXCollections fx:factory="observableArrayList"><String fx:value="Buen estado"/><String fx:value="Dañado"/><String fx:value="Extraviado"/></FXCollections></items><value><String fx:value="Buen estado"/></value>
+                <items><FXCollections fx:factory="observableArrayList"><String fx:value="DISPONIBLE"/><String fx:value="EN REPARACION"/><String fx:value="PERDIDO"/></FXCollections></items><value><String fx:value="DISPONIBLE"/></value>
             </ComboBox>
-            <Label fx:id="lblAyudaEstado" text="Con “Buen estado” vuelve a quedar disponible." styleClass="mensaje-ayuda" wrapText="true" minHeight="-Infinity"
+            <Label fx:id="lblAyudaEstado" text="Con “DISPONIBLE” vuelve a quedar listo para préstamo." styleClass="mensaje-ayuda" wrapText="true" minHeight="-Infinity"
                    GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.valignment="TOP"/>
         </GridPane>
 
@@ -61,7 +61,7 @@
 
         <HBox styleClass="ventana-pie-simple">
             <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
-            <Button fx:id="btnRegistrar" onAction="#cerrar" text="Registrar devolución" styleClass="boton-primario"/>
+            <Button fx:id="btnRegistrar" onAction="#registrar" text="Registrar devolución" styleClass="boton-primario"/>
         </HBox>
     </VBox>
 </StackPane>

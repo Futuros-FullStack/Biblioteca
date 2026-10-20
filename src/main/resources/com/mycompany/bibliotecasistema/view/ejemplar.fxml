@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -17,15 +18,15 @@
 
         <VBox spacing="3">
             <Label fx:id="lblTitulo" text="Agregar ejemplar" styleClass="ventana-titulo-simple"/>
-            <Label fx:id="lblSubtitulo" text="[Título del libro] · se registrará como [Código]" styleClass="ventana-subtitulo" wrapText="true"/>
+            <Label fx:id="lblSubtitulo" styleClass="ventana-subtitulo" wrapText="true"/>
         </VBox>
 
         <VBox spacing="6">
             <Label text="Ubicación" styleClass="form-etiqueta"/>
             <HBox spacing="10">
-                <ComboBox fx:id="cbPasillo" promptText="Pasillo" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="cbEstante" promptText="Estante" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="cbFila" promptText="Fila" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtPasillo" promptText="Pasillo" styleClass="campo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtEstante" promptText="Estante" styleClass="campo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtFila" promptText="Fila" styleClass="campo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
             </HBox>
         </VBox>
 
@@ -34,16 +35,19 @@
             <DatePicker fx:id="dpAdquisicion" maxWidth="Infinity"/>
         </VBox>
 
-        <!-- Solo al editar: cambiar visible a true para verlo -->
+        <!-- Solo al editar -->
         <VBox fx:id="boxEstado" spacing="6" visible="false" managed="false">
             <Label text="Estado" styleClass="form-etiqueta"/>
-            <ComboBox fx:id="cbEstado" styleClass="combo-ventana" maxWidth="Infinity"><items><FXCollections fx:factory="observableArrayList"><String fx:value="Disponible"/><String fx:value="Dañado"/><String fx:value="Extraviado"/></FXCollections></items><value><String fx:value="Disponible"/></value></ComboBox>
+            <ComboBox fx:id="cbEstado" styleClass="combo-ventana" maxWidth="Infinity"><items><FXCollections fx:factory="observableArrayList"><String fx:value="DISPONIBLE"/><String fx:value="EN REPARACION"/><String fx:value="PERDIDO"/></FXCollections></items><value><String fx:value="DISPONIBLE"/></value></ComboBox>
             <Label fx:id="lblAyudaEstado" text="Solo los ejemplares disponibles aparecen para préstamo." styleClass="mensaje-ayuda" wrapText="true" minHeight="-Infinity"/>
         </VBox>
 
+        <Label fx:id="lblError" styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"
+               visible="false" managed="false"/>
+
         <HBox styleClass="ventana-pie-simple">
             <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
-            <Button fx:id="btnGuardar" onAction="#cerrar" text="Guardar ejemplar" styleClass="boton-primario" defaultButton="true"/>
+            <Button fx:id="btnGuardar" onAction="#guardar" text="Guardar ejemplar" styleClass="boton-primario" defaultButton="true"/>
         </HBox>
     </VBox>
 </StackPane>

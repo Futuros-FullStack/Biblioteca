@@ -1,33 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Alta de un libro con sus primeros ejemplares. -->
+<!-- Alta de un libro (sin ejemplares: esos se agregan desde el inventario). -->
 <StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
-    <VBox styleClass="ventana, ventana-simple" prefWidth="560" maxWidth="560">
+           fx:controller="com.mycompany.bibliotecasistema.controller.AgregarLibroController">
+    <VBox styleClass="ventana, ventana-simple" prefWidth="680" maxWidth="680">
 
         <Label text="Agregar libro" styleClass="ventana-titulo-simple"/>
 
-        <VBox spacing="6">
-            <Label text="Título" styleClass="form-etiqueta"/>
-            <TextField fx:id="txtTitulo" styleClass="campo-ventana"/>
-        </VBox>
+        <HBox spacing="16" alignment="TOP_LEFT">
+            <VBox spacing="12" HBox.hgrow="ALWAYS">
+                <VBox spacing="6">
+                    <Label text="Título" styleClass="form-etiqueta"/>
+                    <TextField fx:id="txtTitulo" styleClass="campo-ventana"/>
+                </VBox>
+
+                <VBox spacing="6">
+                    <HBox spacing="4">
+                        <Label text="Autores" styleClass="form-etiqueta"/>
+                        <Label text="(sepáralos con comas)" styleClass="etiqueta-opcional"/>
+                    </HBox>
+                    <TextField fx:id="txtAutores" styleClass="campo-ventana"/>
+                </VBox>
+            </VBox>
+            <VBox spacing="6">
+                <HBox spacing="4">
+                    <Label text="Portada" styleClass="form-etiqueta"/>
+                    <Label text="(opcional)" styleClass="etiqueta-opcional"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <StackPane styleClass="portada-vista-previa">
+                        <ImageView fx:id="imgPortada" fitWidth="60" fitHeight="80" preserveRatio="true"/>
+                    </StackPane>
+                    <VBox spacing="6">
+                        <Label fx:id="lblArchivoPortada" text="Sin imagen" styleClass="mensaje-ayuda" maxWidth="110" wrapText="true"/>
+                        <Button text="Elegir imagen" onAction="#elegirPortada" styleClass="boton-secundario"/>
+                        <Button fx:id="btnQuitarPortada" text="Quitar" onAction="#quitarPortada" styleClass="boton-secundario"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </HBox>
 
         <VBox spacing="6">
             <HBox spacing="4">
-                <Label text="Autores" styleClass="form-etiqueta"/>
-                <Label text="(sepáralos con comas)" styleClass="etiqueta-opcional"/>
+                <Label text="Descripción" styleClass="form-etiqueta"/>
+                <Label text="(opcional)" styleClass="etiqueta-opcional"/>
             </HBox>
-            <TextField fx:id="txtAutores" styleClass="campo-ventana"/>
+            <TextArea fx:id="txtDescripcion" styleClass="area-ventana" prefRowCount="4" wrapText="true"/>
         </VBox>
 
         <GridPane hgap="16" vgap="6">
@@ -45,27 +74,15 @@
                    GridPane.columnIndex="0" style="-fx-padding: 8 0 0 0;"/>
             <TextField fx:id="txtAnio" styleClass="campo-ventana" promptText="2024"
                        GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <Label text="Ejemplares a registrar" styleClass="form-etiqueta" GridPane.rowIndex="2"
-                   GridPane.columnIndex="1" style="-fx-padding: 8 0 0 0;"/>
-            <TextField fx:id="txtCantidad" styleClass="campo-ventana" text="1"
-                       GridPane.rowIndex="3" GridPane.columnIndex="1"/>
         </GridPane>
 
-        <VBox spacing="6">
-            <Label text="Ubicación de los ejemplares" styleClass="form-etiqueta"/>
-            <HBox spacing="10">
-                <ComboBox fx:id="cbPasillo" promptText="Pasillo" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="cbEstante" promptText="Estante" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="cbFila" promptText="Fila" styleClass="combo-ventana" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-            </HBox>
-            <Label fx:id="lblCodigos" text="Los códigos de barras se asignan solos al guardar." styleClass="mensaje-ayuda" wrapText="true"/>
-        </VBox>
+        <Label text="Los ejemplares se agregan después, desde el inventario." styleClass="mensaje-ayuda" wrapText="true"/>
 
         <Label fx:id="lblError" styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"/>
 
         <HBox styleClass="ventana-pie-simple">
             <Button text="Cancelar" onAction="#cerrar" styleClass="boton-secundario"/>
-            <Button text="Guardar libro" onAction="#guardar" styleClass="boton-primario" defaultButton="true"/>
+            <Button fx:id="btnGuardar" text="Guardar libro" onAction="#guardar" styleClass="boton-primario" defaultButton="true"/>
         </HBox>
     </VBox>
 </StackPane>
