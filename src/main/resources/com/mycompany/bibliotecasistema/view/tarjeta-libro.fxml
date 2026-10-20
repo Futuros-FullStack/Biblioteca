@@ -6,16 +6,16 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Tarjeta reutilizable de un libro en el catálogo. Los textos los llena TarjetaLibroController. -->
+<!-- Tarjeta reutilizable de un libro en el catálogo: portada vertical y, debajo, título, autor y disponibilidad. Los textos los llena TarjetaLibroController. -->
 <VBox fx:id="tarjeta" onMouseClicked="#abrirDetalle" styleClass="tarjeta-libro"
       xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.bibliotecasistema.controller.TarjetaLibroController">
 
     <!-- Solo se muestra cuando el libro tiene imagen de portada -->
-    <ImageView fx:id="imgPortada" fitWidth="265" fitHeight="188" preserveRatio="false"
+    <ImageView fx:id="imgPortada" fitWidth="188" fitHeight="170" preserveRatio="false"
                visible="false" managed="false" styleClass="tarjeta-imagen"/>
 
-    <HBox fx:id="portadaTexto" styleClass="tarjeta-portada" VBox.vgrow="ALWAYS">
+    <HBox fx:id="portadaTexto" styleClass="tarjeta-portada" minHeight="170" prefHeight="170" maxHeight="170">
         <Region styleClass="tarjeta-lomo"/>
         <VBox styleClass="tarjeta-portada-texto" HBox.hgrow="ALWAYS">
             <Label fx:id="lblTitulo" text="Título del libro" styleClass="tarjeta-titulo" wrapText="true"/>
@@ -24,7 +24,12 @@
         </VBox>
     </HBox>
 
-    <HBox styleClass="tarjeta-pie">
+    <VBox styleClass="tarjeta-cuerpo">
+        <Label fx:id="lblNombre" text="Título del libro" styleClass="tarjeta-nombre" wrapText="true"/>
         <Label fx:id="lblAutores" text="Autores" styleClass="tarjeta-autores" wrapText="true"/>
-    </HBox>
+        <HBox fx:id="disponibilidad" styleClass="tarjeta-disponibilidad, estado-disponible">
+            <Region styleClass="punto"/>
+            <Label fx:id="lblDisponibles" text="0 disponibles"/>
+        </HBox>
+    </VBox>
 </VBox>

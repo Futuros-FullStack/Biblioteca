@@ -12,7 +12,7 @@
 
 <!-- Ventana emergente con el detalle de un libro y sus ejemplares. -->
 <StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.mycompany.bibliotecasistema.controller.VentanaEmergenteController">
+           fx:controller="com.mycompany.bibliotecasistema.controller.DetalleLibroController">
     <VBox styleClass="ventana" prefWidth="660" maxWidth="660">
 
         <HBox styleClass="ventana-encabezado">

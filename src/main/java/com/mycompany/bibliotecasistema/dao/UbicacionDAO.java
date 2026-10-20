@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class UbicacionDAO {
 
-    // Si la ubicacion ya existe la devuelve; si no, la crea
+    
     public Ubicacion buscarOCrear(String pasillo, String estante, String fila) throws SQLException {
         String sqlBuscar = "SELECT id_ubicacion FROM ubicaciones WHERE pasillo = ? AND estante = ? AND fila = ?";
         String sqlCrear = "INSERT INTO ubicaciones (pasillo, estante, fila) VALUES (?, ?, ?) RETURNING id_ubicacion";
@@ -36,7 +36,7 @@ public class UbicacionDAO {
         }
     }
 
-    // Todos los ejemplares de un libro estan en la misma ubicacion (RN-50)
+
     public Ubicacion buscarPorLibro(int idLibro) throws SQLException {
         String sql = "SELECT ub.id_ubicacion, ub.pasillo, ub.estante, ub.fila "
                 + "FROM ubicaciones ub INNER JOIN ejemplares e ON e.id_ubicacion = ub.id_ubicacion "

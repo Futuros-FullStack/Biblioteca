@@ -35,18 +35,16 @@ public class RegistrarAlumnoController {
     @FXML
     private Button btnGuardar;
 
-    // Alumno que se está editando; null cuando la ventana es de alta
     private Usuario alumnoEditado;
 
-    // Se llama antes de mostrar la ventana. La matrícula no se modifica: identifica al alumno
+    
     public void prepararEditar(Usuario alumno) {
         alumnoEditado = alumno;
         lblTitulo.setText("Editar alumno");
-        lblSubtitulo.setText("Matrícula " + alumno.getMatricula() + " · la matrícula no se puede modificar.");
+        lblSubtitulo.setText("Modifica los datos del alumno y guarda los cambios.");
         btnGuardar.setText("Guardar cambios");
         txtNombre.setText(alumno.getNombre());
         txtMatricula.setText(alumno.getMatricula());
-        txtMatricula.setDisable(true);
         txtCorreo.setText(alumno.getCorreo());
     }
 
@@ -91,7 +89,7 @@ public class RegistrarAlumnoController {
         guardarEnBaseDeDatos(alumno);
     }
 
-    // El guardado se hace fuera del hilo de JavaFX para no congelar la ventana
+    
     private void guardarEnBaseDeDatos(Usuario alumno) {
         Task<Void> tarea = new Task<>() {
             @Override
@@ -116,7 +114,7 @@ public class RegistrarAlumnoController {
         hilo.start();
     }
 
-    // La base rechaza matrícula o correo repetidos (restricciones UNIQUE)
+    
     private String mensajeDeError(Throwable error) {
         if (error instanceof SQLException && error.getMessage() != null) {
             String detalle = error.getMessage();

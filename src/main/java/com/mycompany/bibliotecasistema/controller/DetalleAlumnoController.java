@@ -69,7 +69,7 @@ public class DetalleAlumnoController {
         App.cerrar(lblNombre);
     }
 
-    // La consulta a la base se hace fuera del hilo de JavaFX para no congelar la ventana
+    
     private void cargarPrestamos(Usuario alumno) {
         Task<List<DetallePrestamo>> tarea = new Task<>() {
             @Override
@@ -111,7 +111,7 @@ public class DetalleAlumnoController {
         aplicarCupo(alumno, prestamos);
     }
 
-    // RN-47: un alumno bloqueado no recibe préstamos. RN-07: con 2 libros en su poder no puede llevarse otro
+    
     private void aplicarCupo(Usuario alumno, List<DetallePrestamo> prestamos) {
         if (alumno.isBloqueado()) {
             mostrarAviso("Está bloqueado por un libro perdido. No puede recibir préstamos hasta que se registre la reposición.");

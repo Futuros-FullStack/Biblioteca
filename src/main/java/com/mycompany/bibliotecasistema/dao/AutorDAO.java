@@ -26,7 +26,7 @@ public class AutorDAO {
         return autores;
     }
 
-    // Devuelve el autor con ese nombre exacto (sin importar mayusculas) o null si no existe
+    
     public Autor buscarPorNombre(String nombre) throws SQLException {
         String sql = "SELECT id_autor, nombre FROM autores WHERE LOWER(nombre) = LOWER(?)";
         try (Connection con = ConexionBD.getConexion();

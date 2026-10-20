@@ -14,10 +14,9 @@ import java.util.List;
 public class LibroDAO {
 
     private static final String SELECT_LIBRO
-            = "SELECT l.id_libro, l.isbn, l.titulo, l.editorial, l.anio_publicacion, l.descripcion, "
-            + "p.url_portada AS portada FROM libros l LEFT JOIN portada p ON p.id_libro = l.id_libro ";
+            = "SELECT id_libro, isbn, titulo, editorial, anio_publicacion, descripcion, portada FROM v_libros_detalle ";
 
-    // Usa la vista v_catalogo_libros. Busca por titulo, autor o ISBN; con texto vacio devuelve todos
+    
     public List<Libro> buscarCatalogo(String texto) throws SQLException {
         String sql = "SELECT id_libro, isbn, titulo, editorial, portada, autores, copias_disponibles "
                 + "FROM v_catalogo_libros WHERE titulo ILIKE ? OR isbn ILIKE ? OR autores ILIKE ? ORDER BY titulo";
@@ -45,7 +44,6 @@ public class LibroDAO {
         return libros;
     }
 
-    // Un renglon por libro con sus conteos de ejemplares. Busca por titulo, ISBN o codigo de barras de un ejemplar
     public List<Libro> buscarInventario(String texto) throws SQLException {
         String sql = "SELECT l.id_libro, l.titulo, l.isbn, COUNT(e.id_ejemplar) AS total, "
                 + "COUNT(*) FILTER (WHERE ee.nombre_estado_ejemplar = ?) AS disponibles, "
@@ -82,14 +80,13 @@ public class LibroDAO {
     }
 
     public Libro buscarPorId(int idLibro) throws SQLException {
-        return buscarUno("WHERE l.id_libro = ?", idLibro);
+        return buscarUno("WHERE id_libro = ?", idLibro);
     }
 
     public Libro buscarPorIsbn(String isbn) throws SQLException {
-        return buscarUno("WHERE l.isbn = ?", isbn);
+        return buscarUno("WHERE isbn = ?", isbn);
     }
 
-    // Inserta el libro y sus autores en una sola transaccion
     public void insertar(Libro libro) throws SQLException {
         String sqlLibro = "INSERT INTO libros (isbn, titulo, editorial, anio_publicacion, descripcion) "
                 + "VALUES (?, ?, ?, ?, ?) RETURNING id_libro";
@@ -120,7 +117,7 @@ public class LibroDAO {
         }
     }
 
-    // Registra el libro con sus autores (los que no existen se crean). Los ejemplares se agregan aparte
+  
     public void registrar(Libro libro, List<String> nombresAutores) throws SQLException {
         AutorDAO autorDAO = new AutorDAO();
 
@@ -147,7 +144,7 @@ public class LibroDAO {
         }
     }
 
-    // Sus autores y su portada se borran solos; la base rechaza el borrado si el libro tiene ejemplares
+   
     public void eliminar(int idLibro) throws SQLException {
         try (Connection con = ConexionBD.getConexion();
                 PreparedStatement ps = con.prepareStatement("DELETE FROM libros WHERE id_libro = ?")) {
@@ -156,7 +153,7 @@ public class LibroDAO {
         }
     }
 
-    // La portada es opcional y vive en su propia tabla; si el libro ya tenia una se reemplaza
+    
     private void guardarPortada(Connection con, Libro libro) throws SQLException {
         if (libro.getPortada() == null) {
             return;

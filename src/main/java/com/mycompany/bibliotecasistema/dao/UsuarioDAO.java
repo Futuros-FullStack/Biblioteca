@@ -4,52 +4,49 @@ import com.mycompany.bibliotecasistema.model.Rol;
 import com.mycompany.bibliotecasistema.model.Usuario;
 import com.mycompany.bibliotecasistema.util.ConexionBD;
 import com.mycompany.bibliotecasistema.util.Seguridad;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UsuarioDAO {
 
-    private static final String SELECT_USUARIO
-            = "SELECT u.id_usuario, u.nombre, u.correo, u.password_hash, u.matricula, u.bloqueado, "
-            + "r.id_rol, r.nombre_rol "
-            + "FROM usuarios u INNER JOIN rol r ON u.id_rol = r.id_rol ";
-
-    // Devuelve el administrador si las credenciales son correctas, si no devuelve null
+   
     public Usuario autenticarAdministrador(String correo, String password) throws SQLException {
-        Usuario admin = buscar(SELECT_USUARIO + "WHERE LOWER(u.correo) = LOWER(?) AND r.nombre_rol = 'Administrador'", correo);
-        if (admin != null && Seguridad.verificar(password, admin.getPasswordHash())) {
-            return admin;
+        try (Connection con = ConexionBD.getConexion();
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_autenticar_administrador(?)")) {
+            ps.setString(1, correo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && Seguridad.verificar(password, rs.getString("password"))) {
+                    return mapear(rs);
+                }
+                return null;
+            }
         }
-        return null;
     }
 
+  
     public Usuario buscarAlumnoPorMatricula(String matricula) throws SQLException {
-        return buscar(SELECT_USUARIO + "WHERE u.matricula = ? AND r.nombre_rol = 'Alumno'", matricula);
+        try (Connection con = ConexionBD.getConexion();
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_buscar_alumno_por_matricula(?)")) {
+            ps.setString(1, matricula);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? mapear(rs) : null;
+            }
+        }
     }
 
-    // Alumnos con sus conteos de prestamos. Busca por matricula o nombre; con texto vacio devuelve todos
+    
     public List<Usuario> buscarAlumnos(String texto) throws SQLException {
-        String sql = "SELECT u.id_usuario, u.matricula, u.nombre, u.correo, u.bloqueado, "
-                + "(SELECT COUNT(*) FROM detalle_prestamo dp "
-                + "INNER JOIN prestamos p ON dp.id_prestamo = p.id_prestamo "
-                + "INNER JOIN estado_prestamo ep ON p.id_estado_prestamo = ep.id_estado_prestamo "
-                + "WHERE p.id_usuario = u.id_usuario AND dp.fecha_devolucion_real IS NULL "
-                + "AND ep.nombre_estado_prestamo IN ('ACTIVO', 'ATRASADO')) AS activos, "
-                + "(SELECT COUNT(*) FROM prestamos p WHERE p.id_usuario = u.id_usuario) AS total "
-                + "FROM usuarios u INNER JOIN rol r ON u.id_rol = r.id_rol "
-                + "WHERE r.nombre_rol = 'Alumno' AND (u.matricula ILIKE ? OR u.nombre ILIKE ?) "
-                + "ORDER BY u.id_usuario DESC";
-        String patron = "%" + (texto == null ? "" : texto.trim()) + "%";
         List<Usuario> alumnos = new ArrayList<>();
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, patron);
-            ps.setString(2, patron);
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_buscar_alumnos(?)")) {
+            ps.setString(1, texto == null ? "" : texto.trim());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Usuario alumno = new Usuario();
@@ -58,8 +55,8 @@ public class UsuarioDAO {
                     alumno.setNombre(rs.getString("nombre"));
                     alumno.setCorreo(rs.getString("correo"));
                     alumno.setBloqueado(rs.getBoolean("bloqueado"));
-                    alumno.setPrestamosActivos(rs.getInt("activos"));
-                    alumno.setPrestamosTotal(rs.getInt("total"));
+                    alumno.setPrestamosActivos(rs.getInt("prestamos_activos"));
+                    alumno.setPrestamosTotal(rs.getInt("prestamos_total"));
                     alumnos.add(alumno);
                 }
             }
@@ -67,7 +64,6 @@ public class UsuarioDAO {
         return alumnos;
     }
 
-    // Usa la vista v_alumnos_bloqueados
     public List<Usuario> listarBloqueados() throws SQLException {
         String sql = "SELECT id_usuario, matricula, nombre, correo FROM v_alumnos_bloqueados ORDER BY nombre";
         List<Usuario> alumnos = new ArrayList<>();
@@ -87,14 +83,14 @@ public class UsuarioDAO {
         return alumnos;
     }
 
+    
     public void insertarAlumno(Usuario alumno) throws SQLException {
-        String sql = "INSERT INTO usuarios (id_rol, nombre, correo, matricula) "
-                + "VALUES ((SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno'), ?, ?, ?) RETURNING id_usuario";
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement("CALL p_registrar_alumno(?, ?, ?, ?)")) {
             ps.setString(1, alumno.getNombre());
             ps.setString(2, alumno.getCorreo());
             ps.setString(3, alumno.getMatricula());
+            ps.setNull(4, Types.INTEGER);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     alumno.setIdUsuario(rs.getInt(1));
@@ -104,45 +100,33 @@ public class UsuarioDAO {
     }
 
     public void actualizarAlumno(Usuario alumno) throws SQLException {
-        String sql = "UPDATE usuarios SET nombre = ?, correo = ? WHERE id_usuario = ?";
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, alumno.getNombre());
-            ps.setString(2, alumno.getCorreo());
-            ps.setInt(3, alumno.getIdUsuario());
-            ps.executeUpdate();
+                CallableStatement cs = con.prepareCall("CALL p_actualizar_alumno(?, ?, ?, ?)")) {
+            cs.setInt(1, alumno.getIdUsuario());
+            cs.setString(2, alumno.getNombre());
+            cs.setString(3, alumno.getCorreo());
+            cs.setString(4, alumno.getMatricula());
+            cs.execute();
         }
     }
 
-    // La base lo rechaza (SQLState 23503) si el alumno tiene préstamos, aunque ya estén devueltos
+    
     public void eliminarAlumno(int idUsuario) throws SQLException {
-        String sql = "DELETE FROM usuarios WHERE id_usuario = ? "
-                + "AND id_rol = (SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno')";
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idUsuario);
-            ps.executeUpdate();
+                CallableStatement cs = con.prepareCall("CALL p_eliminar_alumno(?)")) {
+            cs.setInt(1, idUsuario);
+            cs.execute();
         }
     }
 
-    private Usuario buscar(String sql, String valor) throws SQLException {
-        try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, valor);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-                Usuario usuario = new Usuario();
-                usuario.setIdUsuario(rs.getInt("id_usuario"));
-                usuario.setNombre(rs.getString("nombre"));
-                usuario.setCorreo(rs.getString("correo"));
-                usuario.setPasswordHash(rs.getString("password_hash"));
-                usuario.setMatricula(rs.getString("matricula"));
-                usuario.setBloqueado(rs.getBoolean("bloqueado"));
-                usuario.setRol(new Rol(rs.getInt("id_rol"), rs.getString("nombre_rol")));
-                return usuario;
-            }
-        }
+    private Usuario mapear(ResultSet rs) throws SQLException {
+        Usuario usuario = new Usuario();
+        usuario.setIdUsuario(rs.getInt("id_usuario"));
+        usuario.setNombre(rs.getString("nombre"));
+        usuario.setCorreo(rs.getString("correo"));
+        usuario.setMatricula(rs.getString("matricula"));
+        usuario.setBloqueado(rs.getBoolean("bloqueado"));
+        usuario.setRol(new Rol(null, rs.getString("rol")));
+        return usuario;
     }
 }

@@ -360,73 +360,90 @@
     -fx-padding: 40 0;
 }
 
-/* Tarjeta de libro */
+/* Tarjeta de libro: portada vertical con título, autor y disponibilidad debajo */
 .tarjeta-libro {
     -fx-background-color: -color-blanco;
-    -fx-background-radius: 8;
-    -fx-border-color: -color-primario;
-    -fx-border-width: 1.5;
-    -fx-border-radius: 8;
-    -fx-min-width: 265;
-    -fx-pref-width: 265;
-    -fx-max-width: 265;
-    -fx-min-height: 250;
-    -fx-pref-height: 250;
-    -fx-max-height: 250;
+    -fx-background-radius: 4;
+    -fx-border-color: -color-linea;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-min-width: 190;
+    -fx-pref-width: 190;
+    -fx-max-width: 190;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, -color-sombra, 6, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, -color-sombra, 8, 0, 0, 2);
 }
 
 .tarjeta-libro:hover {
-    -fx-scale-x: 1.02;
-    -fx-scale-y: 1.02;
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-border-color: -color-dorado;
     -fx-effect: dropshadow(gaussian, -color-sombra-fuerte, 16, 0, 0, 6);
 }
 
+/* Portada sin imagen: bloque azul con lomo dorado, como la tapa de un libro */
 .tarjeta-portada {
-    -fx-background-color: -color-primario;
-    -fx-background-radius: 7 7 0 0;
+    -fx-background-color: linear-gradient(to bottom right, -color-primario 0%, -color-primario-oscuro 100%);
+    -fx-background-radius: 3 3 0 0;
 }
 
 .tarjeta-lomo {
-    -fx-background-color: -color-primario-oscuro;
-    -fx-background-radius: 7 0 0 0;
-    -fx-min-width: 30;
-    -fx-pref-width: 30;
-    -fx-max-width: 30;
+    -fx-background-color: -color-dorado;
+    -fx-background-radius: 3 0 0 0;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
 }
 
 .tarjeta-portada-texto {
-    -fx-padding: 18 16 14 16;
+    -fx-padding: 14 12 10 12;
     -fx-spacing: 6;
 }
 
 .tarjeta-titulo {
     -fx-text-fill: -color-blanco;
-    -fx-font-size: 18px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
 }
 
 .tarjeta-ciudad {
-    -fx-text-fill: -color-blanco-80;
-    -fx-font-size: 12px;
+    -fx-text-fill: -color-dorado-claro;
+    -fx-font-size: 11px;
 }
 
-.tarjeta-pie {
-    -fx-background-color: -color-blanco;
-    -fx-background-radius: 0 0 7 7;
-    -fx-border-color: -color-primario transparent transparent transparent;
-    -fx-border-width: 1.5 0 0 0;
-    -fx-padding: 10 14;
-    -fx-min-height: 62;
-    -fx-pref-height: 62;
-    -fx-alignment: center-left;
+.tarjeta-cuerpo {
+    -fx-padding: 8 12 10 12;
+    -fx-spacing: 3;
+    -fx-border-color: -color-dorado transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.tarjeta-nombre {
+    -fx-text-fill: -color-texto;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-min-height: 32;
 }
 
 .tarjeta-autores {
-    -fx-text-fill: -color-primario;
-    -fx-font-size: 13px;
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
 }
+
+.tarjeta-disponibilidad {
+    -fx-padding: 2 0 0 0;
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+}
+
+.tarjeta-disponibilidad > .label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-texto-suave;
+}
+
+.tarjeta-disponibilidad.estado-disponible > .label { -fx-text-fill: -color-exito; }
+.tarjeta-disponibilidad.estado-prestado > .label { -fx-text-fill: -color-primario-claro; }
 
 /* Placeholder "En construcción" */
 .placeholder-icono {
@@ -1222,6 +1239,7 @@
 .alumno-nombre,
 .navbar-marca,
 .tarjeta-titulo,
+.tarjeta-nombre,
 .subtitulo {
     -fx-font-family: "Georgia";
 }
@@ -1363,49 +1381,6 @@
 .campo-busqueda:focused {
     -fx-border-color: -color-dorado;
     -fx-border-width: 1.5;
-}
-
-/* Tarjeta de libro: lomo dorado, estilo ficha bibliográfica */
-.tarjeta-libro {
-    -fx-background-radius: 4;
-    -fx-border-color: -color-linea;
-    -fx-border-width: 1;
-    -fx-border-radius: 4;
-    -fx-effect: dropshadow(gaussian, -color-sombra, 8, 0, 0, 2);
-}
-
-.tarjeta-libro:hover {
-    -fx-scale-x: 1.015;
-    -fx-scale-y: 1.015;
-    -fx-border-color: -color-dorado;
-}
-
-.tarjeta-portada {
-    -fx-background-color: linear-gradient(to bottom right, -color-primario 0%, -color-primario-oscuro 100%);
-    -fx-background-radius: 3 3 0 0;
-}
-
-.tarjeta-lomo {
-    -fx-background-color: -color-dorado;
-    -fx-background-radius: 3 0 0 0;
-    -fx-min-width: 8;
-    -fx-pref-width: 8;
-    -fx-max-width: 8;
-}
-
-.tarjeta-ciudad {
-    -fx-text-fill: -color-dorado-claro;
-}
-
-.tarjeta-pie {
-    -fx-background-radius: 0 0 3 3;
-    -fx-border-color: -color-dorado transparent transparent transparent;
-    -fx-border-width: 2 0 0 0;
-}
-
-.tarjeta-autores {
-    -fx-text-fill: -color-texto;
-    -fx-font-style: italic;
 }
 
 /* Portada del libro: vista previa en el formulario e imagen en la tarjeta */

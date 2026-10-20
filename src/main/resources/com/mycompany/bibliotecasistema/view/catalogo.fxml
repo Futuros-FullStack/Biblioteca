@@ -9,7 +9,8 @@
 <?import javafx.scene.layout.VBox?>
 
 <!-- Catálogo de libros: mismo FXML para Estudiante y Administrador (el rol se lee de Sesion). -->
-<BorderPane xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mycompany.bibliotecasistema.controller.CatalogoController">
     <top>
         <fx:include fx:id="navbar" source="navbar.fxml"/>
     </top>
@@ -24,11 +25,7 @@
             <StackPane VBox.vgrow="ALWAYS">
                 <ScrollPane fx:id="scrollLibros" styleClass="scroll-catalogo" fitToWidth="true"
                             hbarPolicy="NEVER">
-                    <FlowPane fx:id="panelLibros" styleClass="panel-libros">
-                        <fx:include source="tarjeta-libro.fxml"/>
-                        <fx:include source="tarjeta-libro.fxml"/>
-                        <fx:include source="tarjeta-libro.fxml"/>
-                    </FlowPane>
+                    <FlowPane fx:id="panelLibros" styleClass="panel-libros"/>
                 </ScrollPane>
                 <Label fx:id="lblSinResultados" text="No se encontraron libros"
                        styleClass="sin-resultados" StackPane.alignment="TOP_CENTER"

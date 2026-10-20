@@ -16,7 +16,7 @@ import java.util.List;
 
 public class HistorialUbicacionDAO {
 
-    // Usa la vista v_ubicaciones (ya viene ordenada por fecha, de la mas reciente a la mas antigua)
+    
     public List<HistorialUbicacion> listar() throws SQLException {
         String sql = "SELECT id_historial, libro, codigo_barras, fecha_cambio, bibliotecario_responsable, motivo, "
                 + "pasillo_anterior, estante_anterior, fila_anterior, pasillo_nuevo, estante_nuevo, fila_nueva FROM v_ubicaciones";

@@ -17,25 +17,20 @@ import java.util.List;
 public class EjemplarDAO {
 
     private static final String SELECT_EJEMPLAR
-            = "SELECT e.id_ejemplar, e.codigo_barras, e.fecha_adquisicion, "
-            + "l.id_libro, l.titulo, l.isbn, "
-            + "ub.id_ubicacion, ub.pasillo, ub.estante, ub.fila, "
-            + "ee.id_estado_ejemplar, ee.nombre_estado_ejemplar "
-            + "FROM ejemplares e "
-            + "INNER JOIN libros l ON e.id_libro = l.id_libro "
-            + "INNER JOIN ubicaciones ub ON e.id_ubicacion = ub.id_ubicacion "
-            + "INNER JOIN estado_ejemplares ee ON e.id_estado_ejemplar = ee.id_estado_ejemplar ";
+            = "SELECT id_ejemplar, codigo_barras, fecha_adquisicion, id_libro, titulo, isbn, "
+            + "id_ubicacion, pasillo, estante, fila, id_estado_ejemplar, nombre_estado_ejemplar "
+            + "FROM v_ejemplares_detalle ";
 
     public List<Ejemplar> listarPorLibro(int idLibro) throws SQLException {
-        return consultar(SELECT_EJEMPLAR + "WHERE e.id_libro = ? ORDER BY e.codigo_barras", String.valueOf(idLibro), true);
+        return consultar(SELECT_EJEMPLAR + "WHERE id_libro = ? ORDER BY codigo_barras", String.valueOf(idLibro), true);
     }
 
     public Ejemplar buscarPorCodigo(String codigoBarras) throws SQLException {
-        List<Ejemplar> resultado = consultar(SELECT_EJEMPLAR + "WHERE e.codigo_barras = ?", codigoBarras, false);
+        List<Ejemplar> resultado = consultar(SELECT_EJEMPLAR + "WHERE codigo_barras = ?", codigoBarras, false);
         return resultado.isEmpty() ? null : resultado.get(0);
     }
 
-    // Usa la vista v_catalogo_libros
+   
     public int contarDisponibles(int idLibro) throws SQLException {
         String sql = "SELECT copias_disponibles FROM v_catalogo_libros WHERE id_libro = ?";
         try (Connection con = ConexionBD.getConexion();
@@ -47,7 +42,7 @@ public class EjemplarDAO {
         }
     }
 
-    // Codigo consecutivo global con formato BC-001, BC-002...
+   
     public String siguienteCodigoBarras() throws SQLException {
         String sql = "SELECT COALESCE(MAX(CAST(SUBSTRING(codigo_barras FROM 4) AS INT)), 0) + 1 "
                 + "FROM ejemplares WHERE codigo_barras ~ '^BC-[0-9]+$'";
@@ -59,7 +54,7 @@ public class EjemplarDAO {
         }
     }
 
-    // El ejemplar nuevo siempre queda Disponible
+    
     public void insertar(Ejemplar ejemplar) throws SQLException {
         String sql = "INSERT INTO ejemplares (id_libro, id_ubicacion, id_estado_ejemplar, codigo_barras, fecha_adquisicion) "
                 + "VALUES (?, ?, (SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = ?), ?, ?) "
@@ -104,7 +99,7 @@ public class EjemplarDAO {
         }
     }
 
-    // Un ejemplar con prestamos o cambios de ubicacion ya no se puede borrar de la base
+    
     public boolean tieneHistorial(int idEjemplar) throws SQLException {
         String sql = "SELECT EXISTS (SELECT 1 FROM detalle_prestamo WHERE id_ejemplar = ?) "
                 + "OR EXISTS (SELECT 1 FROM historial_ubicaciones WHERE id_ejemplar = ?)";
@@ -127,7 +122,7 @@ public class EjemplarDAO {
         }
     }
 
-    // Se mueven todos los ejemplares del libro juntos (RN-62)
+    
     public void reubicarLibro(int idLibro, int idUbicacion) throws SQLException {
         String sql = "UPDATE ejemplares SET id_ubicacion = ? WHERE id_libro = ?";
         try (Connection con = ConexionBD.getConexion();
