@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-desing": {
+      "source": "kintsukuro1/aplicacion_colegio",
+      "sourceType": "github",
+      "skillPath": "Aplicacion_Colegio/.github/skills/frontend-desing/SKILL.md",
+      "computedHash": "0fd4f6eff04267deb80daac3261ea6437feb44c5e88ce7887be31824cb603cb8"
+    },
+    "javafx-developer": {
+      "source": "dongzy0617/javafx-skill",
+      "sourceType": "github",
+      "skillPath": "skills/javafx-developer/SKILL.md",
+      "computedHash": "1739efcd27b0fcd38bd87eb4a8c510707834f3122a9aabed399b062111b24e76"
+    }
+  }
+}

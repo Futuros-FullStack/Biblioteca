@@ -1,0 +1,796 @@
+-- COPIA Y PEGA
+
+ALTER TABLE libros ADD CONSTRAINT check_publicacion CHECK (anio_publicacion >= 1800);
+
+
+ALTER TABLE ejemplares ADD CONSTRAINT check_adquisicion CHECK (fecha_adquisicion <= CURRENT_DATE);
+
+
+CREATE OR REPLACE VIEW v_usuarios_rol AS
+SELECT
+u.id_usuario,
+u.nombre,
+u.correo,
+u.matricula,
+u.bloqueado,
+r.nombre_rol AS rol
+FROM usuarios u
+INNER JOIN rol r ON r.id_rol = u.id_rol;
+
+
+CREATE OR REPLACE VIEW v_ejemplares_detalle AS
+SELECT
+e.id_ejemplar,
+e.codigo_barras,
+e.fecha_adquisicion,
+l.id_libro,
+l.titulo,
+l.isbn,
+p.url_portada AS portada,
+u.id_ubicacion,
+u.pasillo,
+u.estante,
+u.fila,
+ej.id_estado_ejemplar,
+ej.nombre_estado_ejemplar
+FROM ejemplares e
+INNER JOIN libros l ON l.id_libro = e.id_libro
+LEFT JOIN portada p ON p.id_libro = e.id_libro
+INNER JOIN ubicaciones u ON u.id_ubicacion = e.id_ubicacion
+INNER JOIN estado_ejemplares ej ON ej.id_estado_ejemplar = e.id_estado_ejemplar;
+
+
+CREATE OR REPLACE VIEW v_libros_detalle AS
+SELECT
+l.id_libro,
+l.isbn,
+l.titulo,
+l.editorial,
+l.anio_publicacion,
+l.descripcion,
+p.url_portada AS portada
+FROM libros l
+LEFT JOIN portada p ON p.id_libro = l.id_libro;
+
+
+CREATE OR REPLACE VIEW v_detalle_prestamos AS
+SELECT
+p.id_prestamo,
+p.fecha_prestamo,
+p.fecha_entrega_esperada,
+p.renovado,
+p.fecha_renovacion,
+p.observaciones,
+ep.id_estado_prestamo,
+ep.nombre_estado_prestamo,
+u.id_usuario,
+u.nombre,
+u.matricula,
+u.correo,
+e.id_ejemplar,
+e.codigo_barras,
+l.id_libro,
+l.titulo,
+dp.fecha_devolucion_real
+FROM prestamos p
+INNER JOIN estado_prestamo ep ON ep.id_estado_prestamo = p.id_estado_prestamo
+INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
+INNER JOIN detalle_prestamo dp ON p.id_prestamo = dp.id_prestamo
+INNER JOIN ejemplares e ON e.id_ejemplar = dp.id_ejemplar
+INNER JOIN libros l ON l.id_libro = e.id_libro;
+
+
+
+-- ----------------------------------------------------------------------------------------
+
+
+
+CREATE OR REPLACE FUNCTION fn_autenticar_administrador(p_correo TEXT)
+RETURNS TABLE(
+id_usuario INT,
+nombre TEXT,
+correo TEXT,
+password TEXT,
+matricula TEXT,
+bloqueado BOOLEAN,
+rol TEXT
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT u.id_usuario, u.nombre, u.correo, u.password_hash, u.matricula, u.bloqueado, r.nombre_rol
+FROM usuarios u
+INNER JOIN rol r ON u.id_rol = r.id_rol
+WHERE LOWER(u.correo) = LOWER(p_correo) AND r.nombre_rol = 'Administrador';
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_alumno_por_matricula(p_matricula TEXT)
+RETURNS TABLE(
+id_usuario INT,
+nombre TEXT,
+correo TEXT,
+matricula TEXT,
+bloqueado BOOLEAN,
+rol TEXT
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT v.id_usuario, v.nombre, v.correo, v.matricula, v.bloqueado, v.rol
+FROM v_usuarios_rol v
+WHERE v.matricula = p_matricula AND v.rol = 'Alumno';
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_alumnos(p_texto TEXT)
+RETURNS TABLE(
+id_usuario INT,
+matricula TEXT,
+nombre TEXT,
+correo TEXT,
+bloqueado BOOLEAN,
+prestamos_activos INT,
+prestamos_total INT
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT v.id_usuario, v.matricula, v.nombre, v.correo, v.bloqueado, (SELECT COUNT(*)::INT FROM detalle_prestamo dp
+INNER JOIN prestamos p ON dp.id_prestamo = p.id_prestamo 
+INNER JOIN estado_prestamo ep ON p.id_estado_prestamo = ep.id_estado_prestamo 
+WHERE p.id_usuario = v.id_usuario AND dp.fecha_devolucion_real IS NULL AND ep.nombre_estado_prestamo IN ('ACTIVO', 'ATRASADO')),
+(SELECT COUNT(*)::INT FROM prestamos p WHERE p.id_usuario = v.id_usuario)
+FROM v_usuarios_rol v
+WHERE v.rol = 'Alumno'
+AND (p_texto = '' OR v.matricula ILIKE '%' || p_texto || '%' OR v.nombre ILIKE '%' || p_texto || '%')
+ORDER BY v.id_usuario DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE PROCEDURE p_registrar_alumno(
+p_nombre TEXT,
+p_correo TEXT,
+p_matricula TEXT,
+OUT p_id_usuario INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+INSERT INTO usuarios (id_rol, nombre, correo, matricula)
+VALUES ((SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno'), p_nombre, p_correo, p_matricula)
+RETURNING id_usuario INTO p_id_usuario;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE p_actualizar_alumno(
+p_id_usuario INT,
+p_nombre TEXT,
+p_correo TEXT,
+p_matricula TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+UPDATE usuarios SET nombre = p_nombre, correo = p_correo, matricula = p_matricula WHERE id_usuario = p_id_usuario;
+END;
+$$;
+
+
+CREATE OR REPLACE PROCEDURE p_eliminar_alumno(
+p_id_usuario INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+IF EXISTS (SELECT 1 FROM prestamos WHERE id_usuario = p_id_usuario) THEN
+RAISE EXCEPTION USING ERRCODE = '23503', MESSAGE = 'El alumno tiene prestamos en su historial y no puede ser eliminado.';
+END IF;
+DELETE FROM usuarios WHERE id_usuario = p_id_usuario AND id_rol = (SELECT id_rol FROM rol WHERE nombre_rol = 'Alumno');
+END;
+$$;
+
+
+
+CREATE OR REPLACE PROCEDURE p_registrar_reposicion(
+p_id_usuario INT,
+p_id_libro INT,
+p_id_ubicacion INT,
+p_codigo_barras TEXT,
+p_fecha_adquisicion DATE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+IF NOT EXISTS (SELECT 1 FROM usuarios WHERE id_usuario = p_id_usuario AND bloqueado = TRUE) THEN
+RAISE EXCEPTION 'El alumno no se encuentra bloqueado.';
+END IF;
+INSERT INTO ejemplares (id_libro, id_ubicacion, id_estado_ejemplar, codigo_barras, fecha_adquisicion)
+    VALUES (
+        p_id_libro, 
+        p_id_ubicacion, 
+        (SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = 'DISPONIBLE'), 
+        p_codigo_barras, 
+        p_fecha_adquisicion
+    );
+UPDATE usuarios SET bloqueado = FALSE WHERE id_usuario = p_id_usuario;
+END;
+$$;
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION fn_listar_en_poder(p_id_usuario INT)
+RETURNS SETOF v_detalle_prestamos
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_detalle_prestamos
+WHERE id_usuario = p_id_usuario
+AND nombre_estado_prestamo IN ('ACTIVO', 'ATRASADO')
+ORDER BY fecha_entrega_esperada ASC;
+END;
+$$ LANGUAGE plpgsql; 
+
+
+CREATE OR REPLACE FUNCTION fn_proximas_entregas(p_texto TEXT)
+RETURNS SETOF v_detalle_prestamos
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_detalle_prestamos
+WHERE nombre_estado_prestamo = 'ACTIVO'
+AND (p_texto = '' OR matricula ILIKE '%' || p_texto || '%' OR nombre ILIKE '%' || p_texto || '%')
+ORDER BY fecha_entrega_esperada ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_prestamos_vencidos(p_texto TEXT)
+RETURNS SETOF v_detalle_prestamos 
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_detalle_prestamos 
+WHERE nombre_estado_prestamo = 'ATRASADO'
+AND (p_texto = '' OR matricula ILIKE '%' || p_texto || '%' OR nombre ILIKE '%' || p_texto || '%')
+ORDER BY fecha_entrega_esperada ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_historial_prestamos(p_texto TEXT)
+RETURNS SETOF v_detalle_prestamos
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_detalle_prestamos
+WHERE nombre_estado_prestamo IN ('DEVUELTO')
+AND (p_texto = '' OR matricula ILIKE '%' || p_texto || '%' OR nombre ILIKE '%' || p_texto || '%')
+ORDER BY fecha_prestamo DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_listar_prestamos_recientes(p_texto TEXT)
+RETURNS SETOF v_detalle_prestamos
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_detalle_prestamos 
+WHERE (p_texto = '' OR matricula ILIKE '%' || p_texto || '%' OR nombre ILIKE '%' || p_texto || '%')
+ORDER BY fecha_prestamo DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION fn_listar_ejemplares_por_libro(p_id_libro INT)
+RETURNS SETOF v_ejemplares_detalle
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_ejemplares_detalle
+WHERE id_libro = p_id_libro
+ORDER BY codigo_barras ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_ejemplar_por_codigo(p_codigo_barras TEXT)
+RETURNS SETOF v_ejemplares_detalle
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_ejemplares_detalle
+WHERE codigo_barras = p_codigo_barras;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_contar_disponibles(p_id_libro INT)
+RETURNS INT
+AS $$
+DECLARE
+v_total_disponible INT;
+BEGIN
+SELECT copias_disponibles INTO v_total_disponible
+FROM v_catalogo_libros
+WHERE id_libro = p_id_libro;
+RETURN COALESCE(v_total_disponible, 0);
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE SEQUENCE IF NOT EXISTS seq_codigo_barras START 1;
+
+CREATE OR REPLACE FUNCTION fn_siguiente_codigo_barras()
+RETURNS TEXT
+AS $$
+DECLARE
+v_siguiente INT;
+BEGIN
+v_siguiente:=nextval('seq_codigo_barras');
+RETURN 'BC-' || LPAD(v_siguiente::TEXT, 3, '0');
+END;
+$$ LANGUAGE plpgsql;
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE p_registrar_ejemplar(
+p_id_libro INT,
+p_id_ubicacion INT,
+p_codigo_barras TEXT,
+p_fecha_adquisicion DATE,
+OUT p_id_ejemplar INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+INSERT INTO ejemplares (id_libro, id_ubicacion, id_estado_ejemplar, codigo_barras, fecha_adquisicion) VALUES (p_id_libro, p_id_ubicacion, (SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = 'DISPONIBLE'), p_codigo_barras, p_fecha_adquisicion)
+RETURNING id_ejemplar INTO p_id_ejemplar;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE p_cambiar_estado_ejemplar(
+p_id_ejemplar INT,
+p_nombre_estado TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+UPDATE ejemplares
+SET id_estado_ejemplar = (SELECT id_estado_ejemplar FROM estado_ejemplares
+WHERE nombre_estado_ejemplar = p_nombre_estado)
+WHERE id_ejemplar = p_id_ejemplar;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE p_actualizar_ejemplar(
+p_id_ejemplar INT,
+p_nombre_estado TEXT,
+p_fecha_adquisicion DATE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+UPDATE ejemplares
+SET id_estado_ejemplar = (SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = p_nombre_estado), fecha_adquisicion = p_fecha_adquisicion
+WHERE id_ejemplar = p_id_ejemplar;
+END;
+$$;
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION fn_ejemplar_tiene_historial(p_id_ejemplar INT)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+IF EXISTS (SELECT 1 FROM detalle_prestamo WHERE id_ejemplar = p_id_ejemplar) THEN
+RETURN TRUE;
+END IF;
+IF EXISTS (SELECT 1 FROM historial_ubicaciones WHERE id_ejemplar = p_id_ejemplar) THEN
+RETURN TRUE;
+END IF;
+RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE PROCEDURE p_eliminar_ejemplar(
+p_id_ejemplar INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+DELETE FROM ejemplares WHERE id_ejemplar = p_id_ejemplar;
+END;
+$$;
+
+
+CREATE OR REPLACE PROCEDURE p_reubicar_libro(
+p_id_libro INT,
+p_id_ubicacion INT,
+p_id_admin INT,
+p_motivo TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+PERFORM set_config('app.admin_actual', p_id_admin::TEXT, true);
+    PERFORM set_config('app.motivo_reubicacion', p_motivo, true);
+UPDATE ejemplares SET id_ubicacion = p_id_ubicacion WHERE id_libro = p_id_libro;
+END;
+$$;
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+-- DAO libros
+
+CREATE OR REPLACE FUNCTION fn_buscar_catalogo(p_texto TEXT)
+RETURNS SETOF v_catalogo_libros
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_catalogo_libros
+WHERE p_texto = '' 
+OR titulo ILIKE '%' || p_texto || '%' 
+OR isbn ILIKE '%' || p_texto || '%'
+OR autores ILIKE '%' || p_texto || '%'
+ORDER BY titulo ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_inventario(p_texto TEXT)
+RETURNS TABLE(
+id_libro INT,
+titulo TEXT,
+isbn TEXT,
+total INT,
+disponibles INT, 
+prestados INT
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT l.id_libro, l.titulo::TEXT, l.isbn::TEXT,
+COUNT(e.id_ejemplar)::INT AS total,
+        COALESCE(COUNT(e.id_ejemplar) FILTER (WHERE ee.nombre_estado_ejemplar = 'DISPONIBLE'), 0)::INT AS disponibles,
+        COALESCE(COUNT(e.id_ejemplar) FILTER (WHERE ee.nombre_estado_ejemplar = 'PRESTADO'), 0)::INT AS prestados
+FROM libros l
+    LEFT JOIN ejemplares e ON l.id_libro = e.id_libro
+    LEFT JOIN estado_ejemplares ee ON e.id_estado_ejemplar = ee.id_estado_ejemplar
+    WHERE p_texto = ''
+       OR l.titulo ILIKE '%' || p_texto || '%'
+       OR l.isbn ILIKE '%' || p_texto || '%'
+OR EXISTS (
+           SELECT 1 FROM ejemplares e2 
+           WHERE e2.id_libro = l.id_libro 
+             AND e2.codigo_barras ILIKE '%' || p_texto || '%'
+       )
+    GROUP BY l.id_libro, l.titulo, l.isbn
+    ORDER BY l.titulo ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_libro_por_id(p_id_libro INT)
+RETURNS SETOF v_libros_detalle
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_libros_detalle WHERE id_libro = p_id_libro;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_libro_por_isbn(p_isbn TEXT)
+RETURNS SETOF v_libros_detalle
+AS $$
+BEGIN
+RETURN QUERY SELECT * FROM v_libros_detalle WHERE isbn = p_isbn;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_listar_autores_libro(p_id_libro INT)
+RETURNS TABLE(
+id_autor INT,
+nombre TEXT
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT
+a.id_autor,
+a.nombre::TEXT
+FROM autores a
+INNER JOIN libro_autor la ON a.id_autor = la.id_autor
+WHERE la.id_libro = p_id_libro
+ORDER BY a.nombre ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE PROCEDURE p_registrar_libro(
+p_isbn TEXT,
+p_titulo TEXT,
+p_editorial TEXT,
+p_anio_publicacion INT,
+p_descripcion TEXT,
+p_portada TEXT,
+p_autores TEXT[],
+OUT p_id_libro INT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+v_autor TEXT;
+v_id_autor INT;
+BEGIN
+INSERT INTO libros(isbn, titulo, editorial, anio_publicacion, descripcion)
+VALUES (p_isbn, p_titulo, p_editorial, p_anio_publicacion, p_descripcion)
+RETURNING id_libro INTO p_id_libro;
+IF p_portada IS NOT NULL THEN
+INSERT INTO portada (id_libro, url_portada) VALUES (p_id_libro, p_portada);
+END IF;
+FOREACH v_autor IN ARRAY p_autores
+LOOP
+v_autor := TRIM(v_autor);
+IF v_autor <> '' THEN
+SELECT id_autor INTO v_id_autor 
+            FROM autores 
+            WHERE nombre ILIKE v_autor 
+            LIMIT 1;
+IF v_id_autor IS NULL THEN
+                INSERT INTO autores (nombre) 
+                VALUES (v_autor) 
+                RETURNING id_autor INTO v_id_autor;
+            END IF;
+INSERT INTO libro_autor (id_libro, id_autor)
+            VALUES (p_id_libro, v_id_autor)
+            ON CONFLICT DO NOTHING;
+        END IF;
+    END LOOP;
+END;
+$$;
+
+
+
+CREATE OR REPLACE PROCEDURE p_actualizar_libro(
+    p_id_libro INT,
+    p_isbn TEXT,
+    p_titulo TEXT,
+    p_editorial TEXT,
+    p_anio_publicacion INT,
+    p_descripcion TEXT,
+    p_portada TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE libros 
+    SET 
+        isbn = p_isbn,
+        titulo = p_titulo,
+        editorial = p_editorial,
+        anio_publicacion = p_anio_publicacion,
+        descripcion = p_descripcion
+    WHERE id_libro = p_id_libro;
+    IF p_portada IS NOT NULL THEN
+        INSERT INTO portada (id_libro, url_portada)
+        VALUES (p_id_libro, p_portada)
+        ON CONFLICT (id_libro)
+        DO UPDATE SET url_portada = EXCLUDED.url_portada;
+    END IF;
+END;
+$$;
+
+
+CREATE OR REPLACE procedure p_eliminar_libro(
+p_id_libro INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+IF EXISTS (SELECT 1 FROM ejemplares WHERE id_libro = p_id_libro) THEN
+RAISE EXCEPTION 'No se puede eliminar el libro: aún tiene ejemplares registrados en el inventario.';
+END IF;
+DELETE FROM libros WHERE id_libro = p_id_libro;
+END;
+$$;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- AUTORES DAO
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_autores(p_texto TEXT)
+RETURNS TABLE (
+    id_autor INT,
+    nombre TEXT
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        a.id_autor, 
+        a.nombre::TEXT
+    FROM autores a
+    WHERE p_texto = '' 
+       OR a.nombre ILIKE '%' || p_texto || '%'
+    ORDER BY a.nombre ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE PROCEDURE sp_registrar_autor(
+    p_nombre TEXT,
+    OUT p_id_autor INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    p_nombre := TRIM(p_nombre);
+    SELECT id_autor INTO p_id_autor 
+    FROM autores 
+    WHERE nombre ILIKE p_nombre 
+    LIMIT 1;
+    IF p_id_autor IS NULL THEN
+        INSERT INTO autores (nombre) 
+        VALUES (p_nombre) 
+        RETURNING id_autor INTO p_id_autor;
+    END IF;
+END;
+$$;
+
+
+
+-- UBICACION DAO
+
+
+
+CREATE OR REPLACE PROCEDURE sp_buscar_o_crear_ubicacion(
+    p_pasillo TEXT,
+    p_estante TEXT,
+    p_fila TEXT,
+    OUT p_id_ubicacion INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    SELECT id_ubicacion INTO p_id_ubicacion
+    FROM ubicaciones
+    WHERE pasillo = p_pasillo 
+      AND estante = p_estante 
+      AND fila = p_fila
+    LIMIT 1;
+    IF p_id_ubicacion IS NULL THEN
+        INSERT INTO ubicaciones (pasillo, estante, fila)
+        VALUES (p_pasillo, p_estante, p_fila)
+        RETURNING id_ubicacion INTO p_id_ubicacion;
+    END IF;
+END;
+$$;
+
+
+
+CREATE OR REPLACE FUNCTION fn_ubicacion_de_libro(p_id_libro INT)
+RETURNS TABLE (
+    id_ubicacion INT,
+    pasillo TEXT,
+    estante TEXT,
+    fila TEXT
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        u.id_ubicacion, 
+        u.pasillo::TEXT, 
+        u.estante::TEXT, 
+        u.fila::TEXT
+    FROM ubicaciones u
+    INNER JOIN ejemplares e ON u.id_ubicacion = e.id_ubicacion
+    WHERE e.id_libro = p_id_libro
+    LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_notificacion_aviso ON notificaciones (id_prestamo, id_ejemplar, fecha_entrega_avisada);
+
+CREATE OR REPLACE PROCEDURE p_generar_notificaciones()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+INSERT INTO notificaciones (id_prestamo, id_ejemplar, id_estado_noti, fecha_entrega_avisada)
+SELECT v.id_prestamo, v.id_ejemplar,
+(SELECT id_estado_noti FROM estado_notificaciones WHERE nombre_estado_noti = 'PENDIENTE'),
+v.fecha_entrega_esperada
+FROM v_detalle_prestamos v
+WHERE v.nombre_estado_prestamo = 'ACTIVO'
+AND v.fecha_devolucion_real IS NULL
+AND v.fecha_entrega_esperada >= CURRENT_DATE
+AND CASE EXTRACT(ISODOW FROM v.fecha_entrega_esperada - 1)
+WHEN 7 THEN v.fecha_entrega_esperada - 3
+WHEN 6 THEN v.fecha_entrega_esperada - 2
+ELSE v.fecha_entrega_esperada - 1
+END <= CURRENT_DATE
+ON CONFLICT (id_prestamo, id_ejemplar, fecha_entrega_avisada) DO NOTHING;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION fn_notificaciones_pendientes()
+RETURNS TABLE(
+id_notificacion INT,
+id_usuario INT,
+nombre TEXT,
+correo TEXT,
+titulo TEXT,
+fecha_entrega_avisada DATE
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT n.id_notificacion, v.id_usuario, v.nombre, v.correo, v.titulo, n.fecha_entrega_avisada
+FROM notificaciones n
+INNER JOIN estado_notificaciones en ON en.id_estado_noti = n.id_estado_noti
+INNER JOIN v_detalle_prestamos v ON v.id_prestamo = n.id_prestamo AND v.id_ejemplar = n.id_ejemplar
+WHERE en.nombre_estado_noti = 'PENDIENTE'
+AND v.nombre_estado_prestamo = 'ACTIVO'
+AND v.fecha_devolucion_real IS NULL
+AND n.fecha_entrega_avisada = v.fecha_entrega_esperada
+ORDER BY v.id_usuario, n.fecha_entrega_avisada, n.id_notificacion;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE PROCEDURE p_marcar_notificaciones(
+p_ids INT[],
+p_nombre_estado TEXT,
+p_detalle_error TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+UPDATE notificaciones
+SET id_estado_noti = (SELECT id_estado_noti FROM estado_notificaciones WHERE nombre_estado_noti = p_nombre_estado),
+fecha_envio = CURRENT_TIMESTAMP,
+detalle_error = p_detalle_error
+WHERE id_notificacion = ANY(p_ids);
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION fn_avisos_vigentes()
+RETURNS TABLE(
+id_notificacion INT,
+id_prestamo INT,
+id_ejemplar INT,
+nombre_estado_noti TEXT,
+detalle_error TEXT
+)
+AS $$
+BEGIN
+RETURN QUERY SELECT n.id_notificacion, n.id_prestamo, n.id_ejemplar, en.nombre_estado_noti, n.detalle_error
+FROM notificaciones n
+INNER JOIN estado_notificaciones en ON en.id_estado_noti = n.id_estado_noti
+INNER JOIN prestamos p ON p.id_prestamo = n.id_prestamo
+WHERE n.fecha_entrega_avisada = p.fecha_entrega_esperada;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE PROCEDURE p_reenviar_notificacion(
+p_id_notificacion INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+UPDATE notificaciones
+SET id_estado_noti = (SELECT id_estado_noti FROM estado_notificaciones WHERE nombre_estado_noti = 'PENDIENTE'),
+fecha_envio = NULL,
+detalle_error = NULL
+WHERE id_notificacion = p_id_notificacion
+AND id_estado_noti = (SELECT id_estado_noti FROM estado_notificaciones WHERE nombre_estado_noti = 'FALLIDO');
+END;
+$$;

@@ -1,0 +1,514 @@
+CREATE TABLE rol(
+    id_rol INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre_rol TEXT NOT NULL
+);
+
+CREATE TABLE Usuarios (
+    id_usuario INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_rol INT NOT NULL,
+    nombre TEXT NOT NULL,
+    correo TEXT UNIQUE,
+    password_hash TEXT,
+    matricula TEXT UNIQUE,
+    bloqueado BOOLEAN DEFAULT FALSE,
+    CONSTRAINT check_correo CHECK (correo ~*'^[A-Za-z0-9._%&*#+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'),
+    CONSTRAINT fk_rol_usuario FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT ck_usuario_por_rol CHECK (
+           (id_rol = 1 AND matricula IS NULL     AND password_hash IS NOT NULL)
+        OR (id_rol = 2 AND matricula IS NOT NULL AND password_hash IS NULL))
+);
+
+CREATE TABLE Libros (
+    id_libro INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    isbn TEXT UNIQUE, 
+    titulo TEXT NOT NULL,
+    editorial TEXT,
+    anio_publicacion INT,
+    descripcion TEXT
+);
+
+CREATE TABLE portada (
+id_portada INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+id_libro INT NOT NULL UNIQUE,
+url_portada TEXT NOT NULL,
+CONSTRAINT fk_libro_portada FOREIGN KEY (id_libro) REFERENCES libros(id_libro) ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE Autores (
+    id_autor INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre TEXT NOT NULL
+);
+
+CREATE TABLE Libro_Autor (
+    id_libro INT NOT NULL,
+    id_autor INT NOT NULL,
+    PRIMARY KEY (id_libro, id_autor),
+    CONSTRAINT fk_libro FOREIGN KEY (id_libro) REFERENCES Libros(id_libro) ON DELETE CASCADE,
+    CONSTRAINT fk_autor FOREIGN KEY (id_autor) REFERENCES Autores(id_autor) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Ubicaciones (
+    id_ubicacion INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    pasillo TEXT NOT NULL,
+    estante TEXT NOT NULL,
+    fila TEXT NOT NULL,
+    UNIQUE (pasillo, estante, fila) 
+);
+
+CREATE TABLE estado_ejemplares(id_estado_ejemplar INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, nombre_estado_ejemplar TEXT NOT NULL DEFAULT 'DISPONIBLE'
+);
+
+CREATE TABLE Ejemplares (
+    id_ejemplar INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_libro INT NOT NULL,
+    id_ubicacion INT NOT NULL,
+    id_estado_ejemplar INT NOT NULL,
+    codigo_barras TEXT UNIQUE, 
+    fecha_adquisicion DATE,
+    CONSTRAINT fk_ejemplar_libro FOREIGN KEY (id_libro) REFERENCES Libros(id_libro) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_ejemplar_estado FOREIGN KEY (id_estado_ejemplar) REFERENCES estado_ejemplares(id_estado_ejemplar) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_ejemplar_ubicacion FOREIGN KEY (id_ubicacion) REFERENCES Ubicaciones(id_ubicacion) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE estado_prestamo(id_estado_prestamo INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, nombre_estado_prestamo TEXT NOT NULL DEFAULT 'ACTIVO'
+);
+
+CREATE TABLE Prestamos (
+    id_prestamo INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_admin INT NOT NULL,
+    id_usuario INT NOT NULL,        
+    id_estado_prestamo INT NOT NULL,
+    fecha_prestamo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    
+    fecha_entrega_esperada DATE NOT NULL,
+    renovado BOOLEAN DEFAULT FALSE,
+    fecha_renovacion TIMESTAMP,
+    observaciones TEXT,
+    CONSTRAINT check_fecha_prestamo CHECK (CAST (fecha_prestamo AS DATE) <= CURRENT_DATE),
+    CONSTRAINT fk_prestamo_usuario FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_prestamo_admin FOREIGN KEY (id_admin) REFERENCES Usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_detalle_estado FOREIGN KEY (id_estado_prestamo) REFERENCES estado_prestamo(id_estado_prestamo) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+CREATE TABLE detalle_prestamo (
+id_prestamo INT NOT NULL,
+id_ejemplar INT NOT NULL,
+fecha_devolucion_real TIMESTAMP,
+primary key(id_prestamo, id_ejemplar),
+CONSTRAINT chk_fecha_devolucion CHECK (fecha_devolucion_real IS NULL OR CAST(fecha_devolucion_real AS DATE) <= CURRENT_DATE),
+CONSTRAINT fk_detalle_prestamo FOREIGN KEY (id_prestamo) REFERENCES Prestamos(id_prestamo) ON DELETE CASCADE,
+CONSTRAINT fk_detalle_ejemplar FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+
+CREATE TABLE Historial_Ubicaciones (
+    id_historial INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_ejemplar INT NOT NULL,
+    id_ubicacion_anterior INT,           
+    id_ubicacion_nueva INT NOT NULL,
+    id_admin_responsable INT NOT NULL,   
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    motivo TEXT,                         
+    CONSTRAINT fk_historial_ejemplar FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_historial_anterior FOREIGN KEY (id_ubicacion_anterior) REFERENCES Ubicaciones(id_ubicacion) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_historial_nueva FOREIGN KEY (id_ubicacion_nueva) REFERENCES Ubicaciones(id_ubicacion) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_historial_admin FOREIGN KEY (id_admin_responsable) REFERENCES Usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Estado_Notificaciones (
+id_estado_noti INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+nombre_estado_noti TEXT NOT NULL
+);
+
+CREATE TABLE Notificaciones (
+id_notificacion INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+id_prestamo INT NOT NULL,
+id_ejemplar INT NOT NULL,
+fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+id_estado_noti INT NOT NULL,
+fecha_entrega_avisada DATE NOT NULL,
+detalle_error TEXT,
+CONSTRAINT fk_notificacion_detalle FOREIGN KEY (id_prestamo, id_ejemplar) 
+REFERENCES detalle_prestamo(id_prestamo, id_ejemplar) ON DELETE CASCADE,
+CONSTRAINT fk_estado_noti FOREIGN KEY (id_estado_noti) REFERENCES Estado_Notificaciones(id_estado_noti) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- ///////////////////////////////////////////////////////////////
+
+-- CAMBIAR ZONA HORARIA A MEXICO
+
+ALTER DATABASE biblioteca SET timezone TO 'America/Mexico_City';
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////
+
+-- LLENADO DE TABLAS CATÁLOGO
+
+
+
+INSERT INTO rol (nombre_rol) VALUES ('Administrador'), ('Alumno');
+
+INSERT INTO estado_ejemplares (nombre_estado_ejemplar) VALUES ('DISPONIBLE'), ('PRESTADO'), ('EN REPARACION'), ('PERDIDO');
+
+INSERT INTO estado_prestamo (nombre_estado_prestamo) VALUES ('ACTIVO'), ('ATRASADO'), ('DEVUELTO'), ('CANCELADO');
+
+INSERT INTO Estado_Notificaciones (nombre_estado_noti) VALUES ('PENDIENTE'), ('EXITOSO'), ('FALLIDO');
+
+-- //////////////////////////////////////////////////////////////////////////////////////////////
+
+-- VISTAS
+
+
+-- Se borra primero porque CREATE OR REPLACE no permite agregar columnas en medio de una vista existente
+DROP VIEW IF EXISTS v_catalogo_libros;
+
+CREATE VIEW v_catalogo_libros AS
+SELECT 
+    l.id_libro,
+    l.isbn,
+    l.titulo,
+    l.editorial,
+    p.url_portada AS portada,
+    STRING_AGG(a.nombre, ', ') AS autores,
+    (SELECT COUNT(*) 
+     FROM Ejemplares e 
+     INNER JOIN estado_ejemplares ee ON e.id_estado_ejemplar = ee.id_estado_ejemplar
+     WHERE e.id_libro = l.id_libro AND ee.nombre_estado_ejemplar = 'DISPONIBLE') AS copias_disponibles
+FROM Libros l
+LEFT JOIN Libro_Autor la ON l.id_libro = la.id_libro
+LEFT JOIN Autores a ON la.id_autor = a.id_autor
+LEFT JOIN portada p ON l.id_libro = p.id_libro
+GROUP BY l.id_libro, p.url_portada;
+
+ DROP VIEW IF EXISTS v_catalogo_libros;
+
+  CREATE VIEW v_catalogo_libros AS
+  SELECT
+      l.id_libro,
+      l.isbn,
+      l.titulo,
+      l.editorial,
+      p.url_portada AS portada,
+      STRING_AGG(a.nombre, ', ') AS autores,
+      (SELECT COUNT(*)
+       FROM Ejemplares e
+       INNER JOIN estado_ejemplares ee ON e.id_estado_ejemplar = ee.id_estado_ejemplar
+       WHERE e.id_libro = l.id_libro AND ee.nombre_estado_ejemplar = 'DISPONIBLE') AS copias_disponibles
+  FROM Libros l
+  LEFT JOIN Libro_Autor la ON l.id_libro = la.id_libro
+  LEFT JOIN Autores a ON la.id_autor = a.id_autor
+  LEFT JOIN portada p ON l.id_libro = p.id_libro
+  GROUP BY l.id_libro, p.url_portada;
+
+
+CREATE OR REPLACE VIEW v_prestamos_activos AS
+SELECT 
+    p.id_prestamo,
+    u.nombre AS lector,
+    l.titulo AS libro,
+    e.codigo_barras,
+    p.fecha_prestamo,
+    p.fecha_entrega_esperada,
+    ep.nombre_estado_prestamo AS estado_prestamo,
+    u.matricula,
+    dp.id_ejemplar
+FROM Prestamos p
+INNER JOIN detalle_prestamo dp ON p.id_prestamo = dp.id_prestamo
+INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario
+INNER JOIN Ejemplares e ON dp.id_ejemplar = e.id_ejemplar
+INNER JOIN Libros l ON e.id_libro = l.id_libro
+INNER JOIN estado_prestamo ep ON p.id_estado_prestamo = ep.id_estado_prestamo
+WHERE ep.nombre_estado_prestamo IN ('ACTIVO', 'ATRASADO')
+AND dp.fecha_devolucion_real IS NULL;
+
+
+
+CREATE OR REPLACE VIEW v_inventario_fisico AS
+SELECT 
+    e.id_ejemplar,
+    e.codigo_barras,
+    l.titulo,
+    ee.nombre_estado_ejemplar AS estado,
+    ub.pasillo,
+    ub.estante,
+    ub.fila,
+    e.fecha_adquisicion
+FROM Ejemplares e
+INNER JOIN Libros l ON e.id_libro = l.id_libro
+INNER JOIN Ubicaciones ub ON e.id_ubicacion = ub.id_ubicacion
+INNER JOIN estado_ejemplares ee ON e.id_estado_ejemplar = ee.id_estado_ejemplar;
+
+
+
+CREATE OR REPLACE VIEW v_ubicaciones AS
+SELECT
+h.id_historial,
+l.titulo AS libro,
+e.codigo_barras,
+h.fecha_cambio,
+u.nombre AS bibliotecario_responsable,
+h.motivo,
+ua.pasillo AS pasillo_anterior,
+ua.estante AS estante_anterior,
+un.pasillo AS pasillo_nuevo,
+un.estante AS estante_nuevo,
+ua.fila AS fila_anterior,
+un.fila AS fila_nueva
+FROM historial_ubicaciones h
+INNER JOIN ejemplares e ON h.id_ejemplar = e.id_ejemplar
+INNER JOIN libros l ON e.id_libro = l.id_libro
+INNER JOIN usuarios u ON h.id_admin_responsable = u.id_usuario
+LEFT JOIN ubicaciones ua ON h.id_ubicacion_anterior = ua.id_ubicacion
+INNER JOIN ubicaciones un ON h.id_ubicacion_nueva = un.id_ubicacion
+ORDER BY h.fecha_cambio DESC;
+
+
+
+CREATE OR REPLACE VIEW v_prestamos_vencidos AS
+SELECT
+    p.id_prestamo,
+    u.matricula,
+    u.nombre AS lector,
+    u.correo,
+    l.titulo AS libro,
+    e.codigo_barras,
+    p.fecha_prestamo,
+    p.fecha_entrega_esperada,
+    ep.nombre_estado_prestamo AS estado_prestamo,
+    (CURRENT_DATE - p.fecha_entrega_esperada) AS dias_atraso,
+    dp.id_ejemplar
+FROM prestamos p
+INNER JOIN detalle_prestamo dp ON p.id_prestamo = dp.id_prestamo
+INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario
+INNER JOIN Ejemplares e ON dp.id_ejemplar = e.id_ejemplar
+INNER JOIN Libros l ON e.id_libro = l.id_libro
+INNER JOIN estado_prestamo ep ON p.id_estado_prestamo = ep.id_estado_prestamo
+WHERE (ep.nombre_estado_prestamo = 'ATRASADO' OR (ep.nombre_estado_prestamo = 'ACTIVO' AND p.fecha_entrega_esperada < CURRENT_DATE))
+AND dp.fecha_devolucion_real IS NULL;
+
+
+CREATE OR REPLACE VIEW v_alumnos_bloqueados AS
+SELECT
+u.id_usuario,
+u.matricula,
+u.nombre,
+u.correo
+FROM Usuarios u
+WHERE bloqueado = TRUE;
+
+
+CREATE OR REPLACE VIEW v_historial_prestamos AS
+SELECT
+p.id_prestamo,
+u.matricula,
+u.nombre AS lector,
+l.titulo AS libro,
+e.codigo_barras,
+p.fecha_prestamo,
+p.fecha_entrega_esperada,
+dp.fecha_devolucion_real,
+ep.nombre_estado_prestamo AS estado
+FROM prestamos p
+INNER JOIN detalle_prestamo dp ON dp.id_prestamo = p.id_prestamo
+INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
+INNER JOIN ejemplares e ON dp.id_ejemplar = e.id_ejemplar
+INNER JOIN libros l ON l.id_libro = e.id_libro
+INNER JOIN estado_prestamo ep ON p.id_estado_prestamo = ep.id_estado_prestamo
+WHERE ep.nombre_estado_prestamo = 'DEVUELTO';
+
+
+-- /////////////////////////////////////////////////////////////////////////////////
+
+-- PROCEDURES
+
+
+CREATE OR REPLACE PROCEDURE p_devolucion_ejemplar(
+    p_id_prestamo INT,
+    p_id_ejemplar INT,
+    p_nombre_estado TEXT,
+    p_observaciones TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_id_nuevo_estado_fisico INT;
+    v_id_estado_devuelto INT;
+BEGIN
+    SELECT id_estado_ejemplar INTO v_id_nuevo_estado_fisico FROM estado_ejemplares WHERE nombre_estado_ejemplar = p_nombre_estado;
+    SELECT id_estado_prestamo INTO v_id_estado_devuelto FROM estado_prestamo WHERE nombre_estado_prestamo = 'DEVUELTO';
+    UPDATE detalle_prestamo SET fecha_devolucion_real = CURRENT_TIMESTAMP WHERE id_prestamo = p_id_prestamo AND id_ejemplar = p_id_ejemplar;
+    UPDATE ejemplares SET id_estado_ejemplar = v_id_nuevo_estado_fisico WHERE id_ejemplar = p_id_ejemplar;
+    IF p_observaciones IS NOT NULL THEN
+        UPDATE prestamos SET observaciones = CONCAT(observaciones, ' | ', p_observaciones) WHERE id_prestamo = p_id_prestamo;
+    END IF;
+    IF p_nombre_estado = 'PERDIDO' THEN
+        UPDATE usuarios SET bloqueado = TRUE WHERE id_usuario = (SELECT id_usuario FROM prestamos WHERE id_prestamo = p_id_prestamo);
+    END IF; 
+    IF NOT EXISTS (SELECT 1 FROM detalle_prestamo WHERE id_prestamo = p_id_prestamo AND fecha_devolucion_real IS NULL) THEN
+        UPDATE prestamos SET id_estado_prestamo = v_id_estado_devuelto WHERE id_prestamo = p_id_prestamo;
+    END IF;
+END;
+$$;
+
+
+CREATE OR REPLACE PROCEDURE p_registrar_prestamo(
+p_matricula TEXT,
+p_codigo_barras TEXT,
+p_id_admin INT,
+p_dias_prestamo INT,
+p_observaciones TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+v_id_usuario INT;
+v_estado_bloqueado BOOLEAN;
+v_id_nuevo_prestamo INT;
+v_id_estado_activo INT;
+v_id_estado_prestado INT;
+v_id_estado_disponible INT;
+v_id_ejemplar INT;
+v_estado_actual_ejemplar INT;
+BEGIN
+SELECT id_usuario, bloqueado INTO v_id_usuario, v_estado_bloqueado FROM usuarios WHERE matricula = p_matricula;
+IF v_id_usuario IS NULL THEN
+RAISE EXCEPTION 'Alumno no Encontrado.';
+END IF;
+IF v_estado_bloqueado = TRUE THEN
+RAISE EXCEPTION 'Alumno Bloqueado, no puede pedir libros.';
+END IF;
+SELECT id_ejemplar, id_estado_ejemplar INTO v_id_ejemplar, v_estado_actual_ejemplar FROM ejemplares WHERE codigo_barras = p_codigo_barras;
+SELECT id_estado_ejemplar INTO v_id_estado_disponible FROM estado_ejemplares WHERE nombre_estado_ejemplar = 'DISPONIBLE';
+IF v_estado_actual_ejemplar != v_id_estado_disponible THEN
+RAISE EXCEPTION 'El libro no esta disponible';
+END IF;
+SELECT id_estado_prestamo INTO v_id_estado_activo FROM estado_prestamo WHERE nombre_estado_prestamo = 'ACTIVO';
+SELECT id_estado_ejemplar INTO v_id_estado_prestado FROM estado_ejemplares WHERE nombre_estado_ejemplar = 'PRESTADO';
+INSERT INTO prestamos (id_admin, id_usuario, id_estado_prestamo, fecha_entrega_esperada, observaciones) VALUES (p_id_admin, v_id_usuario, v_id_estado_activo, fn_sumar_dias_habiles(CURRENT_DATE, p_dias_prestamo), p_observaciones) RETURNING id_prestamo INTO v_id_nuevo_prestamo;
+INSERT INTO detalle_prestamo (id_prestamo, id_ejemplar) VALUES (v_id_nuevo_prestamo, v_id_ejemplar);
+UPDATE ejemplares SET id_estado_ejemplar = v_id_estado_prestado WHERE id_ejemplar = v_id_ejemplar;
+END;
+$$;
+
+
+
+CREATE OR REPLACE PROCEDURE p_renovar_prestamo(
+p_id_prestamo INT,
+p_id_ejemplar INT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+v_fecha_esperada DATE;
+v_renovado BOOLEAN;
+v_id_estado_prestamo INT;
+v_id_estado_activo INT;
+BEGIN
+SELECT id_estado_prestamo INTO v_id_estado_activo FROM estado_prestamo WHERE nombre_estado_prestamo = 'ACTIVO';
+SELECT fecha_entrega_esperada, renovado, id_estado_prestamo INTO v_fecha_esperada, v_renovado, v_id_estado_prestamo FROM Prestamos WHERE id_prestamo = p_id_prestamo;
+IF v_id_estado_prestamo != v_id_estado_activo THEN
+RAISE EXCEPTION 'Solo se puede renovar prestamos activos.';
+END IF;
+IF CURRENT_DATE > v_fecha_esperada THEN
+RAISE EXCEPTION 'El prestamo ya esta vencido.';
+END IF;
+IF v_renovado = TRUE THEN 
+RAISE EXCEPTION 'Limite de renovaciones alcanzado.';
+END IF;
+UPDATE Prestamos SET fecha_entrega_esperada = fn_sumar_dias_habiles(v_fecha_esperada, 2), renovado = TRUE, fecha_renovacion = CURRENT_TIMESTAMP WHERE id_prestamo = p_id_prestamo;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE p_actualizar_retraso()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+v_id_estado_activo INT;
+v_id_estado_atrasado INT;
+BEGIN
+SELECT id_estado_prestamo INTO v_id_estado_activo FROM estado_prestamo WHERE nombre_estado_prestamo = 'ACTIVO';
+SELECT id_estado_prestamo INTO v_id_estado_atrasado FROM estado_prestamo WHERE nombre_estado_prestamo = 'ATRASADO';
+UPDATE Prestamos SET id_estado_prestamo = v_id_estado_atrasado WHERE id_estado_prestamo = v_id_estado_activo AND fecha_entrega_esperada < CURRENT_DATE;
+END;
+$$;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- FUNCIONES Y ALGUNOS TRIGGERS
+
+
+CREATE OR REPLACE FUNCTION fn_registro_ubicacion()
+RETURNS TRIGGER
+AS $$
+BEGIN
+IF OLD.id_ubicacion IS DISTINCT FROM NEW.id_ubicacion THEN
+INSERT INTO historial_ubicaciones (id_ejemplar, id_ubicacion_anterior, id_ubicacion_nueva, id_admin_responsable, motivo)
+VALUES (NEW.id_ejemplar, OLD.id_ubicacion, NEW.id_ubicacion, 1, 'Reubicacion registrada por el sistema');
+END IF;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER tigresito_registro_ubicacion
+AFTER UPDATE ON ejemplares
+FOR EACH ROW
+EXECUTE FUNCTION fn_registro_ubicacion();
+
+
+
+CREATE OR REPLACE FUNCTION fn_limite_prestamos()
+RETURNS TRIGGER
+AS $$
+DECLARE
+v_libros_activos INT;
+v_id_usuario INT;
+BEGIN
+SELECT id_usuario INTO v_id_usuario FROM prestamos WHERE id_prestamo = NEW.id_prestamo;
+SELECT COUNT(*) INTO v_libros_activos 
+FROM detalle_prestamo dp
+INNER JOIN prestamos p ON dp.id_prestamo = p.id_prestamo
+INNER JOIN estado_prestamo ep ON ep.id_estado_prestamo = p.id_estado_prestamo 
+WHERE p.id_usuario = v_id_usuario
+AND dp.fecha_devolucion_real IS NULL
+AND ep.nombre_estado_prestamo IN ('ACTIVO', 'ATRASADO');IF v_libros_activos >= 2 THEN
+RAISE EXCEPTION 'El alumno ya alcanzo el limite de prestamos activos, debe devolver al menos uno.';
+END IF;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER tigresito_limite_prestamos
+BEFORE INSERT ON detalle_prestamo
+FOR EACH ROW
+EXECUTE FUNCTION fn_limite_prestamos();
+
+
+
+CREATE OR REPLACE FUNCTION fn_sumar_dias_habiles(p_fecha DATE, p_dias INT)
+RETURNS DATE
+LANGUAGE plpgsql IMMUTABLE
+AS $$
+DECLARE
+    v_fecha DATE := p_fecha;
+    v_resta INT  := p_dias;
+BEGIN
+    WHILE v_resta > 0 LOOP
+        v_fecha := v_fecha + 1;
+        IF EXTRACT(ISODOW FROM v_fecha) < 6 THEN
+            v_resta := v_resta - 1;
+        END IF;
+    END LOOP;
+    RETURN v_fecha;
+END;
+$$;
+
+
+
+
+
+
