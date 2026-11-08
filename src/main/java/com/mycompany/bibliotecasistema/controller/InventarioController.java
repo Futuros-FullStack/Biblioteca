@@ -5,9 +5,9 @@ import com.mycompany.bibliotecasistema.dao.LibroDAO;
 import com.mycompany.bibliotecasistema.model.Libro;
 import java.sql.SQLException;
 import java.util.List;
+import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -20,16 +20,22 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.util.Duration;
 
 
 public class InventarioController {
 
+    private static final int LIMITE_LIBROS = 100;
+
     private final LibroDAO libroDAO = new LibroDAO();
+    private final PauseTransition espera = new PauseTransition(Duration.millis(300));
 
     @FXML
     private TextField txtBusqueda;
     @FXML
     private Label lblSinResultados;
+    @FXML
+    private Label lblNota;
     @FXML
     private TableView<Libro> tablaInventario;
     @FXML
@@ -58,38 +64,28 @@ public class InventarioController {
             }
         });
 
-        // Se vuelve a consultar cada vez que cambia el texto de búsqueda
-        txtBusqueda.textProperty().addListener((obs, anterior, texto) -> cargarInventario());
+        espera.setOnFinished(e -> cargarInventario());
+        txtBusqueda.textProperty().addListener((obs, anterior, texto) -> espera.playFromStart());
         cargarInventario();
     }
 
-    // La consulta se hace fuera del hilo de JavaFX para no congelar la ventana
     private void cargarInventario() {
         String busqueda = txtBusqueda.getText().trim();
-        Task<List<Libro>> tarea = new Task<>() {
-            @Override
-            protected List<Libro> call() throws SQLException {
-                return libroDAO.buscarInventario(busqueda);
-            }
-        };
-        tarea.setOnSucceeded(e -> {
-            // Si el usuario siguió escribiendo, este resultado ya no es el vigente
-            if (busqueda.equals(txtBusqueda.getText().trim())) {
-                lblSinResultados.setText(busqueda.isEmpty()
-                        ? "Aún no hay libros registrados."
-                        : "No se encontraron libros.");
-                tablaInventario.setItems(FXCollections.observableArrayList(tarea.getValue()));
-                // Libro.equals compara solo el id: sin refresh() las celdas conservan los conteos anteriores
-                tablaInventario.refresh();
-            }
-        });
-        tarea.setOnFailed(e -> {
+        try {
+            List<Libro> libros = libroDAO.buscarInventario(busqueda, LIMITE_LIBROS);
+            lblSinResultados.setText(busqueda.isEmpty()
+                    ? "Aún no hay libros registrados."
+                    : "No se encontraron libros.");
+            tablaInventario.setItems(FXCollections.observableArrayList(libros));
+            tablaInventario.refresh();
+            boolean recortado = libros.size() >= LIMITE_LIBROS;
+            lblNota.setText("Se muestran los primeros " + LIMITE_LIBROS + " libros. Usa el buscador para encontrar otros.");
+            lblNota.setVisible(recortado);
+            lblNota.setManaged(recortado);
+        } catch (SQLException e) {
             lblSinResultados.setText("No se pudo cargar el inventario.");
             tablaInventario.getItems().clear();
-        });
-        Thread hilo = new Thread(tarea);
-        hilo.setDaemon(true);
-        hilo.start();
+        }
     }
 
     @FXML
@@ -114,7 +110,7 @@ public class InventarioController {
         cargarInventario();
     }
 
-    // Con ejemplares no se puede eliminar; sin ejemplares se borra definitivamente
+    
     private void eliminarLibro(Libro libro) {
         if (libro.getTotalEjemplares() > 0) {
             avisar(Alert.AlertType.WARNING, "No se puede eliminar \"" + libro.getTitulo()

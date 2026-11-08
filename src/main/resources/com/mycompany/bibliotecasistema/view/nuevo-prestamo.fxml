@@ -49,7 +49,6 @@
             <DatePicker fx:id="dpEntrega" disable="true" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
         </GridPane>
 
-        <Label fx:id="lblAyudaFechas" text="Plazo de préstamo: 2 días hábiles (sin fines de semana). El sistema calcula las dos fechas." styleClass="mensaje-ayuda" wrapText="true" minHeight="-Infinity"/>
         <Label fx:id="lblError"
                styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"
                visible="false" managed="false"/>

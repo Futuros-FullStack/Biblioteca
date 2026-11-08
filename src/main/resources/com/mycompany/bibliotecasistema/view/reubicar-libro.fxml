@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Reubicar un libro: todos sus ejemplares pasan a la nueva ubicación y queda en el historial (RN-50, RN-62). -->
+<StackPane styleClass="ventana-contenedor" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.bibliotecasistema.controller.ReubicarLibroController">
+    <VBox styleClass="ventana, ventana-simple" prefWidth="500" maxWidth="500">
+
+        <VBox spacing="3">
+            <Label text="Reubicar libro" styleClass="ventana-titulo-simple"/>
+            <Label fx:id="lblSubtitulo" styleClass="ventana-subtitulo" wrapText="true"/>
+        </VBox>
+
+        <HBox spacing="10">
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Pasillo" styleClass="form-etiqueta"/>
+                <TextField fx:id="txtPasillo" styleClass="campo-ventana" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Estante" styleClass="form-etiqueta"/>
+                <TextField fx:id="txtEstante" styleClass="campo-ventana" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Fila" styleClass="form-etiqueta"/>
+                <TextField fx:id="txtFila" styleClass="campo-ventana" maxWidth="Infinity"/>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="6">
+            <Label text="Motivo" styleClass="form-etiqueta"/>
+            <TextField fx:id="txtMotivo" styleClass="campo-ventana" maxWidth="Infinity"/>
+        </VBox>
+
+        <Label fx:id="lblError" styleClass="mensaje-error" wrapText="true" minHeight="-Infinity"
+               visible="false" managed="false"/>
+
+        <HBox styleClass="ventana-pie-simple">
+            <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
+            <Button fx:id="btnGuardar" onAction="#guardar" text="Reubicar" styleClass="boton-primario" defaultButton="true"/>
+        </HBox>
+    </VBox>
+</StackPane>

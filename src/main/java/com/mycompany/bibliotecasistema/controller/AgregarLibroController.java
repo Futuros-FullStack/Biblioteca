@@ -8,7 +8,6 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -50,7 +49,7 @@ public class AgregarLibroController {
     @FXML
     private Button btnGuardar;
 
-    // Imagen elegida por el usuario; null mientras no elija ninguna (la portada es opcional)
+   
     private File archivoPortada;
 
     @FXML
@@ -131,44 +130,32 @@ public class AgregarLibroController {
         guardarEnBaseDeDatos(libro, nombresAutores);
     }
 
-    // Devuelve el texto del campo o null si está vacío
+    
     private String textoOpcional(String valor) {
         String texto = valor.trim();
         return texto.isEmpty() ? null : texto;
     }
 
-    // El guardado se hace fuera del hilo de JavaFX para no congelar la ventana
+    
     private void guardarEnBaseDeDatos(Libro libro, List<String> nombresAutores) {
-        Task<Void> tarea = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                if (archivoPortada != null) {
-                    libro.setPortada(PortadaLibro.guardar(archivoPortada));
-                }
-                libroDAO.registrar(libro, nombresAutores);
-                return null;
+        try {
+            if (archivoPortada != null) {
+                libro.setPortada(PortadaLibro.guardar(archivoPortada));
             }
-        };
-        tarea.setOnSucceeded(e -> {
-            Alert aviso = new Alert(Alert.AlertType.INFORMATION,
-                    "El libro se guardó. Ahora debes agregar sus ejemplares desde el inventario.");
-            aviso.initOwner(txtTitulo.getScene().getWindow());
-            aviso.setHeaderText(null);
-            aviso.showAndWait();
-            App.cerrar(txtTitulo);
-        });
-        tarea.setOnFailed(e -> {
-            btnGuardar.setDisable(false);
-            lblError.setText(mensajeDeError(tarea.getException()));
-        });
-
-        btnGuardar.setDisable(true);
-        Thread hilo = new Thread(tarea);
-        hilo.setDaemon(true);
-        hilo.start();
+            libroDAO.registrar(libro, nombresAutores);
+        } catch (Exception e) {
+            lblError.setText(mensajeDeError(e));
+            return;
+        }
+        Alert aviso = new Alert(Alert.AlertType.INFORMATION,
+                "El libro se guardó. Ahora debes agregar sus ejemplares desde el inventario.");
+        aviso.initOwner(txtTitulo.getScene().getWindow());
+        aviso.setHeaderText(null);
+        aviso.showAndWait();
+        App.cerrar(txtTitulo);
     }
 
-    // La base rechaza un ISBN repetido (restricción UNIQUE)
+    
     private String mensajeDeError(Throwable error) {
         if (error instanceof SQLException && error.getMessage() != null
                 && error.getMessage().contains("libros_isbn_key")) {

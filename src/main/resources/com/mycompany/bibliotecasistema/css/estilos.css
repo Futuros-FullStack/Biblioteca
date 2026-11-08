@@ -1,11 +1,6 @@
-/* =====================================================================
-   Biblioteca - Facultad de Negocios (UNACH)
-   Hoja de estilos única. Todos los colores se definen aquí como
-   looked-up colors; FXML y Java solo usan clases de estilo.
-   ===================================================================== */
 
 .root {
-    /* Paleta institucional (Azul UNACH, Pantone 288 C) */
+   
     -color-primario:        #002D72;
     -color-primario-hover:  #003B94;
     -color-primario-oscuro: #001A45;
@@ -354,6 +349,11 @@
     -fx-padding: 8 4 32 4;
 }
 
+.nota-catalogo {
+    -fx-text-fill: -color-texto-suave;
+    -fx-font-size: 13px;
+}
+
 .sin-resultados {
     -fx-text-fill: -color-texto-suave;
     -fx-font-size: 16px;
@@ -362,8 +362,10 @@
 
 /* Tarjeta de libro: portada vertical con título, autor y disponibilidad debajo */
 .tarjeta-libro {
-    -fx-background-color: -color-blanco;
-    -fx-background-radius: 4;
+    /* Sombra barata (segunda capa desplazada) en lugar de dropshadow: 100 efectos hacían lento el scroll */
+    -fx-background-color: -color-sombra, -color-blanco;
+    -fx-background-insets: 2 0 -2 0, 0;
+    -fx-background-radius: 4, 4;
     -fx-border-color: -color-linea;
     -fx-border-width: 1;
     -fx-border-radius: 4;
@@ -371,7 +373,6 @@
     -fx-pref-width: 190;
     -fx-max-width: 190;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, -color-sombra, 8, 0, 0, 2);
 }
 
 .tarjeta-libro:hover {

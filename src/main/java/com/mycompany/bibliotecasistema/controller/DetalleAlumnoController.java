@@ -4,22 +4,20 @@ import com.mycompany.bibliotecasistema.App;
 import com.mycompany.bibliotecasistema.dao.PrestamoDAO;
 import com.mycompany.bibliotecasistema.model.DetallePrestamo;
 import com.mycompany.bibliotecasistema.model.Usuario;
+import com.mycompany.bibliotecasistema.util.Tarjetas;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class DetalleAlumnoController {
 
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter FORMATO_FECHA = Tarjetas.FORMATO_FECHA;
     private static final int LIMITE_LIBROS = 2;
 
     private final PrestamoDAO prestamoDAO = new PrestamoDAO();
@@ -40,60 +38,64 @@ public class DetalleAlumnoController {
     private Label lblAviso;
     @FXML
     private Button btnPrestar;
+    @FXML
+    private Button btnReposicion;
 
-    // Se llama antes de mostrar la ventana, con el alumno elegido en la lista
-    public void setAlumno(Usuario alumno) {
+    
+    public void setAlumno(Usuario alumno) {   //prepara los datos del datalle del alumno
         this.alumno = alumno;
         lblNombre.setText(alumno.getNombre());
         lblMatricula.setText("Matrícula " + alumno.getMatricula());
         lblCorreo.setText(alumno.getCorreo());
-
         listaPrestamos.getChildren().clear();
         cajaSituacion.getChildren().clear();
         ocultarAviso();
         btnPrestar.setDisable(true);
+        btnReposicion.setVisible(alumno.isBloqueado()); //isbloqueado() viene del modelo
+        btnReposicion.setManaged(alumno.isBloqueado());
         cargarPrestamos(alumno);
     }
 
     @FXML
     private void prestar() {
-        FXMLLoader loader = App.prepararVentana("nuevo-prestamo");
-        PrestamosController nuevoPrestamo = loader.getController();
-        nuevoPrestamo.prepararNuevoPrestamo(alumno);
-        App.mostrarVentana(loader, btnPrestar);
-        setAlumno(alumno);
+        FXMLLoader loader = App.prepararVentana("nuevo-prestamo"); //prepara la ventana de nuevo prestamo
+        PrestamosController nuevoPrestamo = loader.getController(); //obtiene el controlador de la ventana de nuevo prestamo
+        nuevoPrestamo.prepararNuevoPrestamo(alumno);//prepara el nuevo prestamo con los datos del alumno
+        App.mostrarVentana(loader, btnPrestar);//muestra la ventana de nuevo prestamo
+        setAlumno(alumno);//actualiza la informacion del detalle del alumno
+    }
+
+    @FXML
+    private void registrarReposicion() {
+        FXMLLoader loader = App.prepararVentana("reposicion"); //prepara la ventana de reposicion
+        ReposicionController ventana = loader.getController();//obtiene el controlador de la ventana de reposicion
+        ventana.prepararReposicion(alumno);//prepara la ventana de reposicion con los datos del alumno
+        App.mostrarVentana(loader, btnReposicion);
+        setAlumno(alumno);//actualiza la informacion del detalle del alumno
     }
 
     @FXML
     private void cerrar() {
-        App.cerrar(lblNombre);
+        App.cerrar(lblNombre);//cierra la ventana de detalle del alumno
     }
 
     
-    private void cargarPrestamos(Usuario alumno) {
-        Task<List<DetallePrestamo>> tarea = new Task<>() {
-            @Override
-            protected List<DetallePrestamo> call() throws Exception {
-                return prestamoDAO.listarEnPoder(alumno.getIdUsuario());
-            }
-        };
-        tarea.setOnSucceeded(e -> mostrarPrestamos(alumno, tarea.getValue()));
-        tarea.setOnFailed(e -> {
-            Label error = new Label("No se pudo cargar la información.");
-            error.getStyleClass().add("mensaje-error");
-            listaPrestamos.getChildren().setAll(error);
-        });
-        Thread hilo = new Thread(tarea);
-        hilo.setDaemon(true);
-        hilo.start();
+    private void cargarPrestamos(Usuario alumno) { //carga los prestamos del alumno
+        try {
+            mostrarPrestamos(alumno, prestamoDAO.listarEnPoder(alumno.getIdUsuario())); //obtiene la lista de prestamos en poder del alumno y los muestra
+        } catch (Exception e) {
+            Label error = new Label("No se pudo cargar la información."); //si hay un error al cargar los prestamos, muestra un mensaje de error
+            error.getStyleClass().add("mensaje-error"); 
+            listaPrestamos.getChildren().setAll(error); //muestra el mensaje de error en la lista de prestamos
+        }
     }
 
-    private void mostrarPrestamos(Usuario alumno, List<DetallePrestamo> prestamos) {
-        boolean hayVencido = false;
-        for (DetallePrestamo detalle : prestamos) {
-            boolean vencido = detalle.getPrestamo().getFechaEntregaEsperada().isBefore(LocalDate.now());
-            hayVencido = hayVencido || vencido;
-            listaPrestamos.getChildren().add(crearTarjeta(detalle, vencido));
+    private void mostrarPrestamos(Usuario alumno, List<DetallePrestamo> prestamos) { //muestra los prestamos del alumno
+        boolean hayVencido = false; //variable para saber si hay algun prestamo vencido
+        for (DetallePrestamo detalle : prestamos) { 
+            boolean vencido = detalle.getPrestamo().getFechaEntregaEsperada().isBefore(LocalDate.now()); //si la fecha de entrega esperada es anterior a la fecha actual, el prestamo esta vencido
+            hayVencido = hayVencido || vencido; //si hay algun prestamo vencido, la variable hayVencido se vuelve true
+            listaPrestamos.getChildren().add(Tarjetas.prestamo(detalle, vencido));
         }
         if (prestamos.isEmpty()) {
             Label vacio = new Label("No tiene préstamos activos.");
@@ -130,37 +132,8 @@ public class DetalleAlumnoController {
         btnPrestar.setDisable(false);
     }
 
-    private HBox crearTarjeta(DetallePrestamo detalle, boolean vencido) {
-        Label libro = new Label(detalle.getEjemplar().getLibro().getTitulo()
-                + " · " + detalle.getEjemplar().getCodigoBarras());
-        libro.getStyleClass().add("ejemplar-codigo");
-        Label entrega = new Label("Entrega: " + detalle.getPrestamo().getFechaEntregaEsperada().format(FORMATO_FECHA));
-        entrega.getStyleClass().add("ejemplar-ubicacion");
-        VBox textos = new VBox(2, libro, entrega);
-
-        Region espacio = new Region();
-        HBox.setHgrow(espacio, javafx.scene.layout.Priority.ALWAYS);
-
-        HBox tarjeta = new HBox(textos, espacio, crearEstado(vencido ? "Vencido" : "Prestado",
-                vencido ? "estado-vencido" : "estado-prestado"));
-        tarjeta.getStyleClass().add("ejemplar-tarjeta");
-        if (vencido) {
-            tarjeta.getStyleClass().add("vencido");
-        }
-        return tarjeta;
-    }
-
     private void mostrarSituacion(String texto, boolean alerta) {
-        cajaSituacion.getChildren().setAll(crearEstado(texto, alerta ? "estado-vencido" : "estado-disponible"));
-    }
-
-    private Label crearEstado(String texto, String estilo) {
-        Region punto = new Region();
-        punto.getStyleClass().add("punto");
-        Label estado = new Label(texto, punto);
-        estado.getStyleClass().addAll("estado", estilo);
-        estado.setGraphicTextGap(7);
-        return estado;
+        cajaSituacion.getChildren().setAll(Tarjetas.estado(texto, alerta ? "estado-vencido" : "estado-disponible")); //muestra el estado del alumno en la caja de situacion
     }
 
     private void mostrarAviso(String mensaje) {

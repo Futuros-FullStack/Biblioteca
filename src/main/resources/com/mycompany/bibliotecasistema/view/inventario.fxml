@@ -29,6 +29,8 @@
             <TextField fx:id="txtBusqueda" styleClass="campo-busqueda"
                        promptText="Busca libro por título o código de barras" maxWidth="380"/>
 
+            <Label fx:id="lblNota" styleClass="nota-catalogo" visible="false" managed="false"/>
+
             <TableView fx:id="tablaInventario" styleClass="tabla" VBox.vgrow="ALWAYS">
                 <VBox.margin><Insets bottom="28"/></VBox.margin>
                 <columns>

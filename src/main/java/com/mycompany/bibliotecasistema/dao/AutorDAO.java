@@ -6,17 +6,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AutorDAO {
 
     public List<Autor> buscar(String texto) throws SQLException {
-        String sql = "SELECT id_autor, nombre FROM autores WHERE nombre ILIKE ? ORDER BY nombre";
         List<Autor> autores = new ArrayList<>();
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, "%" + texto + "%");
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_buscar_autores(?)")) {
+            ps.setString(1, texto == null ? "" : texto.trim());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     autores.add(new Autor(rs.getInt("id_autor"), rs.getString("nombre")));
@@ -26,27 +26,14 @@ public class AutorDAO {
         return autores;
     }
 
-    
-    public Autor buscarPorNombre(String nombre) throws SQLException {
-        String sql = "SELECT id_autor, nombre FROM autores WHERE LOWER(nombre) = LOWER(?)";
+    public Autor registrar(String nombre) throws SQLException {
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement("CALL sp_registrar_autor(?, ?)")) {
             ps.setString(1, nombre);
+            ps.setNull(2, Types.INTEGER);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? new Autor(rs.getInt("id_autor"), rs.getString("nombre")) : null;
-            }
-        }
-    }
-
-    public void insertar(Autor autor) throws SQLException {
-        String sql = "INSERT INTO autores (nombre) VALUES (?) RETURNING id_autor";
-        try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, autor.getNombre());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    autor.setIdAutor(rs.getInt(1));
-                }
+                rs.next();
+                return new Autor(rs.getInt(1), nombre.trim());
             }
         }
     }

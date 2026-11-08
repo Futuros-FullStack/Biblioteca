@@ -37,6 +37,11 @@ public class TarjetaLibroController {
     @FXML
     private HBox portadaTexto;
 
+    @FXML
+    private void initialize() {
+        imgPortada.fitWidthProperty().bind(tarjeta.widthProperty().subtract(2));
+    }
+
     public void setLibro(Libro libro) {
         this.libro = libro;
         lblTitulo.setText(libro.getTitulo());

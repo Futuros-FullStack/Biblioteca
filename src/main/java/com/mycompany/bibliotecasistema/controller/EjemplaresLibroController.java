@@ -22,7 +22,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
-// Ventana con todos los ejemplares de un libro, que se abre desde el inventario
+
 public class EjemplaresLibroController {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -30,7 +30,7 @@ public class EjemplaresLibroController {
     private final EjemplarDAO ejemplarDAO = new EjemplarDAO();
 
     private Libro libro;
-    // Lo usa el inventario para actualizar sus conteos cuando cambia algún ejemplar
+  
     private Runnable alCambiar = () -> { };
 
     @FXML
@@ -69,7 +69,7 @@ public class EjemplaresLibroController {
         });
     }
 
-    // Se llama antes de mostrar la ventana, con el libro elegido
+    
     public void setLibro(Libro libro) {
         this.libro = libro;
         lblTitulo.setText(libro.getTitulo());
@@ -80,7 +80,7 @@ public class EjemplaresLibroController {
         this.alCambiar = alCambiar;
     }
 
-    // Después de agregar, editar o eliminar: actualiza esta tabla y la del inventario
+   
     private void recargar() {
         cargarEjemplares();
         alCambiar.run();
@@ -89,7 +89,6 @@ public class EjemplaresLibroController {
     private void cargarEjemplares() {
         try {
             tablaEjemplares.setItems(FXCollections.observableArrayList(ejemplarDAO.listarPorLibro(libro.getIdLibro())));
-            // Ejemplar.equals compara solo el id: sin refresh() no se ven los cambios de estado o fecha
             tablaEjemplares.refresh();
         } catch (SQLException e) {
             lblSinEjemplares.setText("No se pudieron cargar los ejemplares.");
@@ -109,7 +108,7 @@ public class EjemplaresLibroController {
         recargar();
     }
 
-    // Sin historial se borra de verdad; con historial solo se marca como PERDIDO
+    
     private void eliminarEjemplar(Ejemplar ejemplar) {
         ocultarMensaje();
         if (estaPrestado(ejemplar)) {
@@ -178,6 +177,16 @@ public class EjemplaresLibroController {
     private void ocultarMensaje() {
         lblMensaje.setVisible(false);
         lblMensaje.setManaged(false);
+    }
+
+    @FXML
+    private void reubicar() {
+        ocultarMensaje();
+        FXMLLoader loader = App.prepararVentana("reubicar-libro");
+        ReubicarLibroController ventana = loader.getController();
+        ventana.prepararReubicar(libro);
+        App.mostrarVentana(loader, tablaEjemplares);
+        recargar();
     }
 
     @FXML

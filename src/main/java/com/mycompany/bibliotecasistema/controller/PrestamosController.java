@@ -3,26 +3,30 @@ package com.mycompany.bibliotecasistema.controller;
 import com.mycompany.bibliotecasistema.App;
 import com.mycompany.bibliotecasistema.dao.EjemplarDAO;
 import com.mycompany.bibliotecasistema.dao.LibroDAO;
+import com.mycompany.bibliotecasistema.dao.NotificacionDAO;
 import com.mycompany.bibliotecasistema.dao.PrestamoDAO;
 import com.mycompany.bibliotecasistema.dao.UsuarioDAO;
 import com.mycompany.bibliotecasistema.model.DetallePrestamo;
 import com.mycompany.bibliotecasistema.model.Ejemplar;
 import com.mycompany.bibliotecasistema.model.EstadoEjemplar;
+import com.mycompany.bibliotecasistema.model.EstadoPrestamo;
 import com.mycompany.bibliotecasistema.model.Libro;
+import com.mycompany.bibliotecasistema.model.Notificacion;
 import com.mycompany.bibliotecasistema.model.Usuario;
 import com.mycompany.bibliotecasistema.util.Sesion;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.concurrent.Task;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -64,8 +68,10 @@ public class PrestamosController {
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final EjemplarDAO ejemplarDAO = new EjemplarDAO();
     private final LibroDAO libroDAO = new LibroDAO();
+    private final NotificacionDAO notificacionDAO = new NotificacionDAO();
 
-    // Alumno de la ventana "Nuevo préstamo"
+    private Map<String, Notificacion> avisos = Map.of();
+
     private Usuario alumno;
 
     @FXML
@@ -115,7 +121,6 @@ public class PrestamosController {
     @FXML
     private TableColumn<Usuario, String> colAccionAlumno;
 
-    // Controles de nuevo-prestamo.fxml, que también usa este controlador
     @FXML
     private TextField txtNombre;
     @FXML
@@ -131,7 +136,6 @@ public class PrestamosController {
     @FXML
     private Button btnRegistrar;
 
-    // Controles de buscar-libro.fxml, que también usa este controlador
     @FXML
     private TextField txtBuscarLibro;
     @FXML
@@ -149,7 +153,6 @@ public class PrestamosController {
     @FXML
     private ComboBox<Ejemplar> cbCopia;
 
-    // Lo usan las dos ventanas: mensaje de error y ejemplar elegido
     @FXML
     private Label lblError;
     private Ejemplar ejemplarElegido;
@@ -157,7 +160,7 @@ public class PrestamosController {
 
     @FXML
     private void initialize() {
-        // Las ventanas nuevo-prestamo y buscar-libro no tienen los controles de la vista de préstamos
+        
         if (tabEntregas == null) {
             return;
         }
@@ -174,7 +177,6 @@ public class PrestamosController {
             }
         });
 
-        // Tabla: Próximas entregas
         colAlumno.setCellValueFactory(fila -> new SimpleStringProperty(
                 fila.getValue().getPrestamo().getAlumno().getNombre()));
         colLibro.setCellValueFactory(fila -> new SimpleStringProperty(
@@ -190,9 +192,37 @@ public class PrestamosController {
                 pseudoClassStateChanged(VENCIDO, !vacia && detalle != null && diasDeAtraso(detalle) > 0);
             }
         });
-        columnaBoton(colAccionEntrega, "Registrar devolución", this::registrarDevolucion);
+        colAccionEntrega.setCellFactory(c -> new TableCell<DetallePrestamo, String>() {
+            @Override
+            protected void updateItem(String valor, boolean vacia) {
+                super.updateItem(valor, vacia);
+                if (vacia) {
+                    setGraphic(null);
+                    return;
+                }
+                DetallePrestamo detalle = getTableView().getItems().get(getIndex());
+                Button devolver = new Button("Registrar devolución");
+                devolver.getStyleClass().add("boton-tabla");
+                devolver.setOnAction(e -> registrarDevolucion(detalle));
+                HBox acciones = new HBox(6, devolver);
+                acciones.setAlignment(Pos.CENTER_RIGHT);
+                if (puedeRenovar(detalle)) {
+                    Button renovar = new Button("Renovar");
+                    renovar.getStyleClass().add("boton-tabla-secundario");
+                    renovar.setOnAction(e -> renovarPrestamo(detalle));
+                    acciones.getChildren().add(0, renovar);
+                }
+                if (puedeAnular(detalle)) {
+                    Button anular = new Button("Anular");
+                    anular.getStyleClass().add("boton-tabla-secundario");
+                    anular.setOnAction(e -> anularPrestamo(detalle));
+                    acciones.getChildren().add(0, anular);
+                }
+                setGraphic(acciones);
+            }
+        });
 
-        // Aviso: estado de la notificación vigente del renglón (RN-40)
+       
         colAviso.setCellValueFactory(fila -> new SimpleStringProperty(estadoAviso(fila.getValue())));
         colAviso.setCellFactory(c -> new TableCell<DetallePrestamo, String>() {
             @Override
@@ -220,7 +250,7 @@ public class PrestamosController {
                 if (vacia || estado == null) {
                     return;
                 }
-                // Pendiente y notificado no tienen acción: el envío es automático
+               
                 if (AVISO_SIN_ENVIAR.equals(estado)) {
                     Button notificar = new Button("Notificar");
                     notificar.getStyleClass().add("boton-tabla-secundario");
@@ -236,7 +266,7 @@ public class PrestamosController {
             }
         });
 
-        // Tabla: Alumnos
+        // Tabla Alumnos
         colMatricula.setCellValueFactory(fila -> new SimpleStringProperty(fila.getValue().getMatricula()));
         colNombre.setCellValueFactory(fila -> new SimpleStringProperty(fila.getValue().getNombre()));
         colActivos.setCellValueFactory(fila -> new SimpleStringProperty(
@@ -253,7 +283,7 @@ public class PrestamosController {
             }
         });
 
-        // Búsqueda: se vuelve a consultar cada vez que cambia el texto
+       
         txtBuscarEntregas.textProperty().addListener((obs, anterior, texto) -> cargarEntregas());
         txtBuscarAlumno.textProperty().addListener((obs, anterior, texto) -> cargarAlumnos());
 
@@ -284,10 +314,9 @@ public class PrestamosController {
         recargar();
     }
 
-    // Estados de la notificación vigente del renglón; los tres últimos son los de Estado_Notificaciones
     private String estadoAviso(DetallePrestamo detalle) {
-        // implementar: consultar la notificación cuya fecha_entrega_avisada sea la fecha de entrega vigente
-        return AVISO_SIN_ENVIAR;
+        Notificacion aviso = avisos.get(claveAviso(detalle));
+        return aviso == null ? AVISO_SIN_ENVIAR : aviso.getEstado().getNombreEstadoNoti();
     }
 
     private Label crearEtiquetaAviso(String estado) {
@@ -318,12 +347,82 @@ public class PrestamosController {
         return etiqueta;
     }
 
-    private void verDetalleAviso(DetallePrestamo detalle) {
-        // implementar: mostrar Notificaciones.detalle_error
+    private String claveAviso(DetallePrestamo detalle) {
+        return detalle.getPrestamo().getIdPrestamo() + "|" + detalle.getEjemplar().getIdEjemplar();
     }
 
+    private void verDetalleAviso(DetallePrestamo detalle) {
+        Notificacion aviso = avisos.get(claveAviso(detalle));
+        if (aviso != null) {
+            avisar(Alert.AlertType.INFORMATION, "No se pudo enviar el aviso: " + aviso.getDetalleError());
+        }
+    }
+
+
     private void reenviarAviso(DetallePrestamo detalle) {
-        // implementar: regresar la notificación a PENDIENTE para que la recoja el proceso de envío
+        Notificacion aviso = avisos.get(claveAviso(detalle));
+        if (aviso == null) {
+            return;
+        }
+        try {
+            notificacionDAO.reenviar(aviso.getIdNotificacion());
+            cargarEntregas();
+            avisar(Alert.AlertType.INFORMATION, "El aviso quedó pendiente y se enviará en la siguiente ejecución del proceso de envío.");
+        } catch (SQLException e) {
+            avisar(Alert.AlertType.ERROR, "No se pudo reenviar el aviso.");
+        }
+    }
+
+
+    private boolean puedeRenovar(DetallePrestamo detalle) {
+        return EstadoPrestamo.ACTIVO.equals(detalle.getPrestamo().getEstado().getNombreEstadoPrestamo())
+                && !detalle.getPrestamo().isRenovado()
+                && !detalle.getPrestamo().getFechaEntregaEsperada().isBefore(LocalDate.now());
+    }
+
+    private void renovarPrestamo(DetallePrestamo detalle) {
+        Alert confirmar = new Alert(Alert.AlertType.CONFIRMATION,
+                "Se sumarán 2 días hábiles a la entrega de «" + detalle.getEjemplar().getLibro().getTitulo()
+                + "». Solo se puede renovar una vez. ¿Continuar?", ButtonType.OK, ButtonType.CANCEL);
+        confirmar.initOwner(tablaEntregas.getScene().getWindow());
+        confirmar.setHeaderText(null);
+        if (confirmar.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+        try {
+            prestamoDAO.renovar(detalle.getPrestamo().getIdPrestamo(), detalle.getEjemplar().getIdEjemplar());
+            recargar();
+        } catch (SQLException e) {
+            
+            String mensaje = e.getMessage() == null ? "No se pudo renovar el préstamo."
+                    : e.getMessage().lines().findFirst().get().replaceFirst("^ERROR:\\s*", "");
+            avisar(Alert.AlertType.WARNING, mensaje);
+        }
+    }
+
+   
+    private boolean puedeAnular(DetallePrestamo detalle) {
+        return EstadoPrestamo.ACTIVO.equals(detalle.getPrestamo().getEstado().getNombreEstadoPrestamo())
+                && detalle.getPrestamo().getFechaPrestamo().toLocalDate().equals(LocalDate.now());
+    }
+
+    private void anularPrestamo(DetallePrestamo detalle) {
+        Alert confirmar = new Alert(Alert.AlertType.CONFIRMATION,
+                "Se anulará todo el préstamo de " + detalle.getPrestamo().getAlumno().getNombre()
+                + " y sus ejemplares volverán a estar disponibles. ¿Continuar?", ButtonType.OK, ButtonType.CANCEL);
+        confirmar.initOwner(tablaEntregas.getScene().getWindow());
+        confirmar.setHeaderText(null);
+        if (confirmar.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+        try {
+            prestamoDAO.anular(detalle.getPrestamo().getIdPrestamo());
+            recargar();
+        } catch (SQLException e) {
+            String mensaje = e.getMessage() == null ? "No se pudo anular el préstamo."
+                    : e.getMessage().lines().findFirst().get().replaceFirst("^ERROR:\\s*", "");
+            avisar(Alert.AlertType.WARNING, mensaje);
+        }
     }
 
     private void registrarDevolucion(DetallePrestamo detalle) {
@@ -354,12 +453,12 @@ public class PrestamosController {
     private void editarAlumno(Usuario alumno) {
         FXMLLoader loader = App.prepararVentana("registrar-alumno");
         RegistrarAlumnoController ventana = loader.getController();
-        ventana.prepararEditar(alumno);
+        ventana.botonEditar(alumno);
         App.mostrarVentana(loader, tablaAlumnos);
         recargar();
     }
 
-    // No se elimina a un alumno con libros en su poder; la base también rechaza a quien tiene historial
+   
     private void eliminarAlumno(Usuario alumno) {
         if (alumno.getPrestamosActivos() > 0) {
             avisar(Alert.AlertType.WARNING, "No se puede eliminar a " + alumno.getNombre()
@@ -407,9 +506,8 @@ public class PrestamosController {
         cargarAlumnos();
     }
 
-    // ---------- Ventana "Nuevo préstamo" ----------
+    //Ventana Nuevo préstamo
 
-    // Se llama antes de mostrar la ventana, con el alumno elegido
     public void prepararNuevoPrestamo(Usuario alumno) {
         this.alumno = alumno;
         txtNombre.setText(alumno.getNombre());
@@ -454,9 +552,8 @@ public class PrestamosController {
         App.cerrar((Node) evento.getSource());
     }
 
-    // ---------- Ventana "Buscar libro" ----------
+    //Ventana Buscar libro
 
-    // Se llama antes de mostrar la ventana
     public void prepararBusqueda(Usuario alumno) {
         colTitulo.setCellValueFactory(fila -> new SimpleStringProperty(fila.getValue().getTitulo()));
         colAutor.setCellValueFactory(fila -> new SimpleStringProperty(fila.getValue().getAutoresTexto()));
@@ -477,7 +574,6 @@ public class PrestamosController {
         tablaLibros.getSelectionModel().selectedItemProperty().addListener((obs, anterior, libro) -> cargarCopias(libro));
         txtBuscarLibro.textProperty().addListener((obs, anterior, texto) -> buscarLibros());
 
-        // RN-09: los libros que el alumno ya tiene en su poder no se ofrecen
         ejecutar(() -> prestamoDAO.listarEnPoder(alumno.getIdUsuario()), enPoder -> {
             titulosEnPoder = enPoder.stream()
                     .map(detalle -> detalle.getEjemplar().getLibro().getTitulo())
@@ -502,7 +598,6 @@ public class PrestamosController {
         });
     }
 
-    // Muestra solo los ejemplares disponibles del libro elegido en la tabla
     private void cargarCopias(Libro libro) {
         cbCopia.getItems().clear();
         ocultarError();
@@ -542,7 +637,7 @@ public class PrestamosController {
     private String textoCopia(Ejemplar ejemplar) {
         return ejemplar.getCodigoBarras() + " · " + ejemplar.getUbicacion();
     }
-    // Los procedimientos de la base explican el motivo (alumno bloqueado, límite de libros, etc.)
+    
     private String mensajeDeError(Throwable error) {
         if (error instanceof SQLException && error.getMessage() != null) {
             return error.getMessage().replaceFirst("^ERROR: ", "").split("\n")[0];
@@ -563,13 +658,15 @@ public class PrestamosController {
 
     private void cargarEntregas() {
         String busqueda = txtBuscarEntregas.getText().trim();
-        ejecutar(() -> prestamoDAO.listarProximasEntregas(busqueda), lista -> {
-            // Si el usuario siguió escribiendo, este resultado ya no es el vigente
+        ejecutar(() -> new SimpleEntry<>(prestamoDAO.listarProximasEntregas(busqueda), notificacionDAO.listarVigentes()), resultado -> {
+            
             if (!busqueda.equals(txtBuscarEntregas.getText().trim())) {
                 return;
             }
             lblSinEntregas.setText(SIN_ENTREGAS);
-            tablaEntregas.setItems(FXCollections.observableArrayList(lista));
+            avisos = resultado.getValue();
+            tablaEntregas.setItems(FXCollections.observableArrayList(resultado.getKey()));
+            tablaEntregas.refresh();
         }, error -> {
             lblSinEntregas.setText(ERROR_CARGA);
             tablaEntregas.getItems().clear();
@@ -584,7 +681,6 @@ public class PrestamosController {
             }
             lblSinAlumnos.setText(SIN_ALUMNOS);
             tablaAlumnos.setItems(FXCollections.observableArrayList(lista));
-            // La columna de acciones no tiene valor propio: sin refresh() conservaría los botones con el alumno anterior
             tablaAlumnos.refresh();
         }, error -> {
             lblSinAlumnos.setText(ERROR_CARGA);
@@ -592,22 +688,17 @@ public class PrestamosController {
         });
     }
 
-    // Las consultas a la base se hacen fuera del hilo de JavaFX para no congelar la ventana
     private <T> void ejecutar(Callable<T> consulta, Consumer<T> alTerminar, Consumer<Throwable> alFallar) {
-        Task<T> tarea = new Task<>() {
-            @Override
-            protected T call() throws Exception {
-                return consulta.call();
-            }
-        };
-        tarea.setOnSucceeded(e -> alTerminar.accept(tarea.getValue()));
-        tarea.setOnFailed(e -> alFallar.accept(tarea.getException()));
-        Thread hilo = new Thread(tarea);
-        hilo.setDaemon(true);
-        hilo.start();
+        T resultado;
+        try {
+            resultado = consulta.call();
+        } catch (Exception e) {
+            alFallar.accept(e);
+            return;
+        }
+        alTerminar.accept(resultado);
     }
 
-    // Días de atraso = hoy - fecha de entrega esperada
     private long diasDeAtraso(DetallePrestamo detalle) {
         return ChronoUnit.DAYS.between(detalle.getPrestamo().getFechaEntregaEsperada(), LocalDate.now());
     }

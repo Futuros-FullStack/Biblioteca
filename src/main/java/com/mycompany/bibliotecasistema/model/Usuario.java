@@ -11,7 +11,7 @@ public class Usuario {
     private String passwordHash;
     private String matricula;
     private boolean bloqueado;
-    // Conteos de la lista de alumnos (no son columnas de la tabla usuarios)
+    
     private int prestamosActivos;
     private int prestamosTotal;
 
@@ -107,7 +107,6 @@ public class Usuario {
         return Objects.hashCode(idUsuario);
     }
 
-    // No incluye passwordHash para no exponerlo en logs
     @Override
     public String toString() {
         return "Usuario{idUsuario=" + idUsuario + ", nombre=" + nombre + ", matricula=" + matricula

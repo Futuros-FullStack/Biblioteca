@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -43,6 +44,7 @@ public class App extends Application {
         escenaPrincipal = new Scene(cargar("login"), 1100, 650);
         escenaPrincipal.getStylesheets().add(CSS);
         stage.setTitle("Biblioteca - Facultad de Negocios");
+        stage.getIcons().add(new Image(App.class.getResourceAsStream("logo/fac_negocios.png")));
         stage.setMinWidth(1100);
         stage.setMinHeight(650);
         stage.setScene(escenaPrincipal);

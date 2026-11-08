@@ -4,7 +4,6 @@ import com.mycompany.bibliotecasistema.App;
 import com.mycompany.bibliotecasistema.dao.UsuarioDAO;
 import com.mycompany.bibliotecasistema.model.Usuario;
 import com.mycompany.bibliotecasistema.util.Sesion;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -64,35 +63,22 @@ public class LoginController {
         autenticarAdministrador(correo, contrasena);
     }
 
-    // La consulta a la base se hace fuera del hilo de JavaFX para no congelar la ventana
+   
     private void autenticarAdministrador(String correo, String contrasena) {
-        Task<Usuario> tarea = new Task<>() {
-            @Override
-            protected Usuario call() throws Exception {
-                return usuarioDAO.autenticarAdministrador(correo, contrasena);
-            }
-        };
-        tarea.setOnSucceeded(e -> {
-            btnIngresar.disableProperty().bind(cbRol.valueProperty().isNull());
-            Usuario admin = tarea.getValue();
-            if (admin == null) {
-                mostrarError("Correo o contraseña incorrectos.");
-                return;
-            }
-            Sesion.iniciar(admin);
-            App.setAdministrador(true);
-            App.irA("catalogo");
-        });
-        tarea.setOnFailed(e -> {
-            btnIngresar.disableProperty().bind(cbRol.valueProperty().isNull());
+        Usuario admin;
+        try {
+            admin = usuarioDAO.autenticarAdministrador(correo, contrasena);
+        } catch (Exception e) {
             mostrarError("No se pudo conectar con la base de datos.");
-        });
-
-        btnIngresar.disableProperty().unbind();
-        btnIngresar.setDisable(true);
-        Thread hilo = new Thread(tarea);
-        hilo.setDaemon(true);
-        hilo.start();
+            return;
+        }
+        if (admin == null) {
+            mostrarError("Correo o contraseña incorrectos.");
+            return;
+        }
+        Sesion.iniciar(admin);
+        App.setAdministrador(true);
+        App.irA("catalogo");
     }
 
     private void mostrarCredenciales(boolean mostrar) {

@@ -1,11 +1,14 @@
 package com.mycompany.bibliotecasistema.dao;
 
+import com.mycompany.bibliotecasistema.model.Libro;
 import com.mycompany.bibliotecasistema.model.Rol;
 import com.mycompany.bibliotecasistema.model.Usuario;
 import com.mycompany.bibliotecasistema.util.ConexionBD;
 import com.mycompany.bibliotecasistema.util.Seguridad;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -115,6 +118,43 @@ public class UsuarioDAO {
         try (Connection con = ConexionBD.getConexion();
                 CallableStatement cs = con.prepareCall("CALL p_eliminar_alumno(?)")) {
             cs.setInt(1, idUsuario);
+            cs.execute();
+        }
+    }
+
+    
+    public Libro buscarLibroPerdido(int idAlumno) throws SQLException {
+        String sql = "SELECT l.id_libro, l.titulo FROM detalle_prestamo dp "
+                + "INNER JOIN prestamos p ON p.id_prestamo = dp.id_prestamo "
+                + "INNER JOIN ejemplares e ON e.id_ejemplar = dp.id_ejemplar "
+                + "INNER JOIN estado_ejemplares ee ON ee.id_estado_ejemplar = e.id_estado_ejemplar "
+                + "INNER JOIN libros l ON l.id_libro = e.id_libro "
+                + "WHERE p.id_usuario = ? AND ee.nombre_estado_ejemplar = 'PERDIDO' "
+                + "ORDER BY dp.fecha_devolucion_real DESC LIMIT 1";
+        try (Connection con = ConexionBD.getConexion();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idAlumno);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                Libro libro = new Libro();
+                libro.setIdLibro(rs.getInt("id_libro"));
+                libro.setTitulo(rs.getString("titulo"));
+                return libro;
+            }
+        }
+    }
+
+    public void registrarReposicion(int idAlumno, int idLibro, int idUbicacion, String codigoBarras,
+            LocalDate fechaAdquisicion) throws SQLException {
+        try (Connection con = ConexionBD.getConexion();
+                CallableStatement cs = con.prepareCall("CALL p_registrar_reposicion(?, ?, ?, ?, ?)")) {
+            cs.setInt(1, idAlumno);
+            cs.setInt(2, idLibro);
+            cs.setInt(3, idUbicacion);
+            cs.setString(4, codigoBarras);
+            cs.setDate(5, Date.valueOf(fechaAdquisicion));
             cs.execute();
         }
     }

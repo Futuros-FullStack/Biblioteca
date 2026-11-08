@@ -2,7 +2,7 @@ package com.mycompany.bibliotecasistema.util;
 
 import com.mycompany.bibliotecasistema.model.Usuario;
 
-// Guarda al administrador que inicio sesion; sirve para registrar prestamos (id_admin)
+
 public final class Sesion {
 
     private static Usuario administrador;

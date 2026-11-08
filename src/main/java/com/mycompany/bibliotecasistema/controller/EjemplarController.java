@@ -16,13 +16,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
-// Ventana para agregar un ejemplar a un libro o para editar uno existente
+
 public class EjemplarController {
 
     private final EjemplarDAO ejemplarDAO = new EjemplarDAO();
     private final UbicacionDAO ubicacionDAO = new UbicacionDAO();
 
-    // Al agregar se llena libro; al editar se llena ejemplar
+   
     private Libro libro;
     private Ejemplar ejemplar;
 
@@ -47,12 +47,12 @@ public class EjemplarController {
     @FXML
     private Button btnGuardar;
 
-    // Se llama antes de mostrar la ventana
+   
     public void prepararAgregar(Libro libro) {
         this.libro = libro;
         dpAdquisicion.setValue(LocalDate.now());
         try {
-            // Todos los ejemplares de un libro van en la misma ubicación; el primero la define
+           
             Ubicacion actual = ubicacionDAO.buscarPorLibro(libro.getIdLibro());
             if (actual == null) {
                 lblSubtitulo.setText(libro.getTitulo() + " · es su primer ejemplar, captura dónde se guardará");
@@ -65,12 +65,11 @@ public class EjemplarController {
         }
     }
 
-    // Se llama antes de mostrar la ventana
+
     public void prepararEditar(Ejemplar ejemplar) {
         this.ejemplar = ejemplar;
         lblTitulo.setText("Editar ejemplar");
         lblSubtitulo.setText(ejemplar.getLibro().getTitulo() + " · " + ejemplar.getCodigoBarras());
-        // La ubicación solo cambia moviendo todos los ejemplares del libro
         mostrarUbicacion(ejemplar.getUbicacion());
         dpAdquisicion.setValue(ejemplar.getFechaAdquisicion());
         cbEstado.setValue(ejemplar.getEstado().getNombreEstadoEjemplar());
@@ -109,7 +108,7 @@ public class EjemplarController {
         App.cerrar(btnGuardar);
     }
 
-    // La ubicación existente se muestra bloqueada: solo cambia moviendo todo el libro
+    
     private void mostrarUbicacion(Ubicacion ubicacion) {
         txtPasillo.setText(ubicacion.getPasillo());
         txtEstante.setText(ubicacion.getEstante());

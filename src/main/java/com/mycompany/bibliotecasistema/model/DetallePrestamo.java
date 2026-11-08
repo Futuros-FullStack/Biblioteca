@@ -45,7 +45,7 @@ public class DetallePrestamo {
         return fechaDevolucionReal != null;
     }
 
-    // La clave es compuesta: (id_prestamo, id_ejemplar)
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {

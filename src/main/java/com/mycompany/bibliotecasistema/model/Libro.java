@@ -13,13 +13,13 @@ public class Libro {
     private String editorial;
     private Integer anioPublicacion;
     private String descripcion;
-    // Nombre del archivo de la portada; es opcional (null si no tiene)
+    
     private String portada;
     private List<Autor> autores = new ArrayList<>();
-    // Datos que entrega la vista v_catalogo_libros
+    
     private String autoresTexto;
     private int copiasDisponibles;
-    // Conteos del inventario (LibroDAO.buscarInventario)
+    
     private int totalEjemplares;
     private int copiasPrestadas;
 

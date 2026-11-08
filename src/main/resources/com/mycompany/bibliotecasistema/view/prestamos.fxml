@@ -48,7 +48,7 @@
                             <TableColumn fx:id="colEstado" text="Estado" prefWidth="125" minWidth="115" sortable="false" reorderable="false"/>
                             <TableColumn fx:id="colAviso" text="Aviso" prefWidth="130" minWidth="125" sortable="false" reorderable="false"/>
                             <TableColumn fx:id="colAvisoAccion" prefWidth="95" minWidth="90" sortable="false" reorderable="false" styleClass="col-accion"/>
-                            <TableColumn fx:id="colAccionEntrega" prefWidth="165" minWidth="160" sortable="false" reorderable="false" styleClass="col-accion"/>
+                            <TableColumn fx:id="colAccionEntrega" prefWidth="330" minWidth="320" sortable="false" reorderable="false" styleClass="col-accion"/>
                         </columns>
                         <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                         <placeholder>

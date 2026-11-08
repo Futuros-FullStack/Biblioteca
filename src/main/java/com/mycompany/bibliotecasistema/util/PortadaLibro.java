@@ -9,7 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 import javafx.scene.image.Image;
 
-// Guarda y carga las imagenes de portada. En la base solo se guarda el nombre del archivo.
+
 public final class PortadaLibro {
 
     private static final Path CARPETA = Paths.get(System.getProperty("user.home"), ".biblioteca", "portadas");
@@ -17,7 +17,7 @@ public final class PortadaLibro {
     private PortadaLibro() {
     }
 
-    // Copia la imagen a la carpeta de portadas con un nombre unico y devuelve ese nombre
+   
     public static String guardar(File origen) throws IOException {
         Files.createDirectories(CARPETA);
         String nombre = UUID.randomUUID() + extension(origen.getName());
@@ -25,7 +25,7 @@ public final class PortadaLibro {
         return nombre;
     }
 
-    // Devuelve la imagen guardada, o null si no hay nombre o el archivo ya no existe
+    
     public static Image cargar(String nombre, double ancho, double alto) {
         if (nombre == null || nombre.isBlank()) {
             return null;

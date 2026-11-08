@@ -22,6 +22,8 @@
             <TextField fx:id="txtBusqueda" styleClass="campo-busqueda"
                        promptText="Busca libro por título, autor o ISBN"/>
 
+            <Label fx:id="lblNota" styleClass="nota-catalogo" visible="false" managed="false"/>
+
             <StackPane VBox.vgrow="ALWAYS">
                 <ScrollPane fx:id="scrollLibros" styleClass="scroll-catalogo" fitToWidth="true"
                             hbarPolicy="NEVER">

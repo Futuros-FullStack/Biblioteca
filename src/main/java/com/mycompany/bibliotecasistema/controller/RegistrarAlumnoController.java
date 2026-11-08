@@ -5,7 +5,6 @@ import com.mycompany.bibliotecasistema.dao.UsuarioDAO;
 import com.mycompany.bibliotecasistema.model.Usuario;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -38,8 +37,8 @@ public class RegistrarAlumnoController {
     private Usuario alumnoEditado;
 
     
-    public void prepararEditar(Usuario alumno) {
-        alumnoEditado = alumno;
+    public void botonEditar(Usuario alumno) {
+        alumnoEditado = alumno; //se guarda en alumnoeditado
         lblTitulo.setText("Editar alumno");
         lblSubtitulo.setText("Modifica los datos del alumno y guarda los cambios.");
         btnGuardar.setText("Guardar cambios");
@@ -48,8 +47,8 @@ public class RegistrarAlumnoController {
         txtCorreo.setText(alumno.getCorreo());
     }
 
-    @FXML
-    private void initialize() {
+    @FXML 
+    private void initialize() { //limpia las letras de error antes que ingrese algo el usuario
         txtNombre.textProperty().addListener((obs, anterior, texto) -> lblError.setText(""));
         txtMatricula.textProperty().addListener((obs, anterior, texto) -> lblError.setText(""));
         txtCorreo.textProperty().addListener((obs, anterior, texto) -> lblError.setText(""));
@@ -63,7 +62,7 @@ public class RegistrarAlumnoController {
     @FXML
     private void guardar() {
         String nombre = txtNombre.getText().trim();
-        String matricula = txtMatricula.getText().trim();
+        String matricula = txtMatricula.getText().trim(); //elimina el espacio extra a la cadena 
         String correo = txtCorreo.getText().trim();
 
         if (nombre.isEmpty() || matricula.isEmpty() || correo.isEmpty()) {
@@ -91,28 +90,24 @@ public class RegistrarAlumnoController {
 
     
     private void guardarEnBaseDeDatos(Usuario alumno) {
-        Task<Void> tarea = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                if (alumnoEditado == null) {
-                    usuarioDAO.insertarAlumno(alumno);
-                } else {
-                    usuarioDAO.actualizarAlumno(alumno);
-                }
-                return null;
-            }
-        };
-        tarea.setOnSucceeded(e -> App.cerrar(txtNombre));
-        tarea.setOnFailed(e -> {
-            btnGuardar.setDisable(false);
-            lblError.setText(mensajeDeError(tarea.getException()));
-        });
-
-        btnGuardar.setDisable(true);
-        Thread hilo = new Thread(tarea);
-        hilo.setDaemon(true);
-        hilo.start();
+    btnGuardar.setDisable(true);
+    lblError.setText("");
+    
+    try {
+ 
+        if (alumnoEditado == null) {
+            usuarioDAO.insertarAlumno(alumno);
+        } else {
+            usuarioDAO.actualizarAlumno(alumno);
+        }
+        
+        App.cerrar(txtNombre);
+        
+    } catch (Exception e) {
+        btnGuardar.setDisable(false);
+        lblError.setText(mensajeDeError(e));
     }
+}
 
     
     private String mensajeDeError(Throwable error) {

@@ -64,6 +64,8 @@
         <HBox styleClass="ficha-pie">
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Cerrar" onAction="#cerrar" styleClass="boton-secundario"/>
+            <Button fx:id="btnReposicion" onAction="#registrarReposicion" text="Registrar reposición" styleClass="boton-secundario"
+                    visible="false" managed="false"/>
             <Button fx:id="btnPrestar" onAction="#prestar" text="Realizar préstamo" styleClass="boton-primario"/>
         </HBox>
     </VBox>

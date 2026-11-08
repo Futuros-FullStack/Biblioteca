@@ -5,67 +5,43 @@ import com.mycompany.bibliotecasistema.model.EstadoEjemplar;
 import com.mycompany.bibliotecasistema.model.Libro;
 import com.mycompany.bibliotecasistema.model.Ubicacion;
 import com.mycompany.bibliotecasistema.util.ConexionBD;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EjemplarDAO {
 
-    private static final String SELECT_EJEMPLAR
-            = "SELECT id_ejemplar, codigo_barras, fecha_adquisicion, id_libro, titulo, isbn, "
-            + "id_ubicacion, pasillo, estante, fila, id_estado_ejemplar, nombre_estado_ejemplar "
-            + "FROM v_ejemplares_detalle ";
-
     public List<Ejemplar> listarPorLibro(int idLibro) throws SQLException {
-        return consultar(SELECT_EJEMPLAR + "WHERE id_libro = ? ORDER BY codigo_barras", String.valueOf(idLibro), true);
+        return consultar("fn_listar_ejemplares_por_libro", idLibro);
     }
 
     public Ejemplar buscarPorCodigo(String codigoBarras) throws SQLException {
-        List<Ejemplar> resultado = consultar(SELECT_EJEMPLAR + "WHERE codigo_barras = ?", codigoBarras, false);
+        List<Ejemplar> resultado = consultar("fn_buscar_ejemplar_por_codigo", codigoBarras);
         return resultado.isEmpty() ? null : resultado.get(0);
     }
 
-   
     public int contarDisponibles(int idLibro) throws SQLException {
-        String sql = "SELECT copias_disponibles FROM v_catalogo_libros WHERE id_libro = ?";
-        try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idLibro);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt(1) : 0;
-            }
-        }
+        return escalar("SELECT fn_contar_disponibles(?)", idLibro, Integer.class);
     }
 
-   
     public String siguienteCodigoBarras() throws SQLException {
-        String sql = "SELECT COALESCE(MAX(CAST(SUBSTRING(codigo_barras FROM 4) AS INT)), 0) + 1 "
-                + "FROM ejemplares WHERE codigo_barras ~ '^BC-[0-9]+$'";
-        try (Connection con = ConexionBD.getConexion();
-                Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(sql)) {
-            rs.next();
-            return String.format("BC-%03d", rs.getInt(1));
-        }
+        return escalar("SELECT fn_siguiente_codigo_barras()", null, String.class);
     }
 
-    
     public void insertar(Ejemplar ejemplar) throws SQLException {
-        String sql = "INSERT INTO ejemplares (id_libro, id_ubicacion, id_estado_ejemplar, codigo_barras, fecha_adquisicion) "
-                + "VALUES (?, ?, (SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = ?), ?, ?) "
-                + "RETURNING id_ejemplar";
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement("CALL p_registrar_ejemplar(?, ?, ?, ?, ?)")) {
             ps.setInt(1, ejemplar.getLibro().getIdLibro());
             ps.setInt(2, ejemplar.getUbicacion().getIdUbicacion());
-            ps.setString(3, EstadoEjemplar.DISPONIBLE);
-            ps.setString(4, ejemplar.getCodigoBarras());
-            ps.setObject(5, ejemplar.getFechaAdquisicion());
+            ps.setString(3, ejemplar.getCodigoBarras());
+            ps.setObject(4, ejemplar.getFechaAdquisicion());
+            ps.setNull(5, Types.INTEGER);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     ejemplar.setIdEjemplar(rs.getInt(1));
@@ -75,73 +51,65 @@ public class EjemplarDAO {
     }
 
     public void cambiarEstado(int idEjemplar, String nombreEstado) throws SQLException {
-        String sql = "UPDATE ejemplares SET id_estado_ejemplar = "
-                + "(SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = ?) "
-                + "WHERE id_ejemplar = ?";
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, nombreEstado);
-            ps.setInt(2, idEjemplar);
-            ps.executeUpdate();
+                CallableStatement cs = con.prepareCall("CALL p_cambiar_estado_ejemplar(?, ?)")) {
+            cs.setInt(1, idEjemplar);
+            cs.setString(2, nombreEstado);
+            cs.execute();
         }
     }
 
     public void actualizar(int idEjemplar, String nombreEstado, LocalDate fechaAdquisicion) throws SQLException {
-        String sql = "UPDATE ejemplares SET fecha_adquisicion = ?, id_estado_ejemplar = "
-                + "(SELECT id_estado_ejemplar FROM estado_ejemplares WHERE nombre_estado_ejemplar = ?) "
-                + "WHERE id_ejemplar = ?";
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setObject(1, fechaAdquisicion);
-            ps.setString(2, nombreEstado);
-            ps.setInt(3, idEjemplar);
-            ps.executeUpdate();
+                CallableStatement cs = con.prepareCall("CALL p_actualizar_ejemplar(?, ?, ?)")) {
+            cs.setInt(1, idEjemplar);
+            cs.setString(2, nombreEstado);
+            cs.setObject(3, fechaAdquisicion);
+            cs.execute();
         }
     }
 
-    
     public boolean tieneHistorial(int idEjemplar) throws SQLException {
-        String sql = "SELECT EXISTS (SELECT 1 FROM detalle_prestamo WHERE id_ejemplar = ?) "
-                + "OR EXISTS (SELECT 1 FROM historial_ubicaciones WHERE id_ejemplar = ?)";
-        try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idEjemplar);
-            ps.setInt(2, idEjemplar);
-            try (ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                return rs.getBoolean(1);
-            }
-        }
+        return escalar("SELECT fn_ejemplar_tiene_historial(?)", idEjemplar, Boolean.class);
     }
 
     public void eliminar(int idEjemplar) throws SQLException {
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement("DELETE FROM ejemplares WHERE id_ejemplar = ?")) {
-            ps.setInt(1, idEjemplar);
-            ps.executeUpdate();
+                CallableStatement cs = con.prepareCall("CALL p_eliminar_ejemplar(?)")) {
+            cs.setInt(1, idEjemplar);
+            cs.execute();
         }
     }
 
-    
-    public void reubicarLibro(int idLibro, int idUbicacion) throws SQLException {
-        String sql = "UPDATE ejemplares SET id_ubicacion = ? WHERE id_libro = ?";
+    public void reubicarLibro(int idLibro, int idUbicacion, int idAdmin, String motivo) throws SQLException {
+        try (Connection con = ConexionBD.getConexion();
+                CallableStatement cs = con.prepareCall("CALL p_reubicar_libro(?, ?, ?, ?)")) {
+            cs.setInt(1, idLibro);
+            cs.setInt(2, idUbicacion);
+            cs.setInt(3, idAdmin);
+            cs.setString(4, motivo);
+            cs.execute();
+        }
+    }
+
+    private <T> T escalar(String sql, Object parametro, Class<T> tipo) throws SQLException {
         try (Connection con = ConexionBD.getConexion();
                 PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idUbicacion);
-            ps.setInt(2, idLibro);
-            ps.executeUpdate();
+            if (parametro != null) {
+                ps.setObject(1, parametro);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getObject(1, tipo);
+            }
         }
     }
 
-    private List<Ejemplar> consultar(String sql, String valor, boolean esNumero) throws SQLException {
+    private List<Ejemplar> consultar(String funcion, Object parametro) throws SQLException {
         List<Ejemplar> ejemplares = new ArrayList<>();
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            if (esNumero) {
-                ps.setInt(1, Integer.parseInt(valor));
-            } else {
-                ps.setString(1, valor);
-            }
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM " + funcion + "(?)")) {
+            ps.setObject(1, parametro);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Libro libro = new Libro();

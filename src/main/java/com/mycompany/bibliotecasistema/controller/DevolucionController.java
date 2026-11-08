@@ -53,7 +53,7 @@ public class DevolucionController {
         cbEstado.valueProperty().addListener((obs, anterior, estado) -> lblAyudaEstado.setText(AYUDA_ESTADO.get(estado)));
     }
 
-    // Se llama antes de mostrar la ventana, con la entrega elegida
+   
     public void prepararDevolucion(DetallePrestamo detalle) {
         this.detalle = detalle;
         LocalDate pactada = detalle.getPrestamo().getFechaEntregaEsperada();
@@ -63,7 +63,7 @@ public class DevolucionController {
                 + detalle.getEjemplar().getCodigoBarras() + " · " + detalle.getPrestamo().getAlumno().getNombre());
         lblFechaPactada.setText(pactada.format(FORMATO_FECHA));
 
-        // La base registra la devolución con la fecha y hora actuales, por eso no se puede cambiar
+       
         dpDevolucion.setValue(LocalDate.now());
         dpDevolucion.setDisable(true);
 

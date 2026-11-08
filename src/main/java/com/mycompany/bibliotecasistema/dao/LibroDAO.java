@@ -1,32 +1,29 @@
 package com.mycompany.bibliotecasistema.dao;
 
 import com.mycompany.bibliotecasistema.model.Autor;
-import com.mycompany.bibliotecasistema.model.EstadoEjemplar;
 import com.mycompany.bibliotecasistema.model.Libro;
 import com.mycompany.bibliotecasistema.util.ConexionBD;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LibroDAO {
 
-    private static final String SELECT_LIBRO
-            = "SELECT id_libro, isbn, titulo, editorial, anio_publicacion, descripcion, portada FROM v_libros_detalle ";
-
-    
     public List<Libro> buscarCatalogo(String texto) throws SQLException {
-        String sql = "SELECT id_libro, isbn, titulo, editorial, portada, autores, copias_disponibles "
-                + "FROM v_catalogo_libros WHERE titulo ILIKE ? OR isbn ILIKE ? OR autores ILIKE ? ORDER BY titulo";
-        String patron = "%" + (texto == null ? "" : texto.trim()) + "%";
+        return buscarCatalogo(texto, Integer.MAX_VALUE);
+    }
+
+    public List<Libro> buscarCatalogo(String texto, int limite) throws SQLException {
         List<Libro> libros = new ArrayList<>();
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, patron);
-            ps.setString(2, patron);
-            ps.setString(3, patron);
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_buscar_catalogo(?) LIMIT ?")) {
+            ps.setString(1, texto(texto));
+            ps.setInt(2, limite);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Libro libro = new Libro();
@@ -45,24 +42,15 @@ public class LibroDAO {
     }
 
     public List<Libro> buscarInventario(String texto) throws SQLException {
-        String sql = "SELECT l.id_libro, l.titulo, l.isbn, COUNT(e.id_ejemplar) AS total, "
-                + "COUNT(*) FILTER (WHERE ee.nombre_estado_ejemplar = ?) AS disponibles, "
-                + "COUNT(*) FILTER (WHERE ee.nombre_estado_ejemplar = ?) AS prestados "
-                + "FROM libros l "
-                + "LEFT JOIN ejemplares e ON e.id_libro = l.id_libro "
-                + "LEFT JOIN estado_ejemplares ee ON ee.id_estado_ejemplar = e.id_estado_ejemplar "
-                + "WHERE l.titulo ILIKE ? OR l.isbn ILIKE ? OR EXISTS "
-                + "(SELECT 1 FROM ejemplares x WHERE x.id_libro = l.id_libro AND x.codigo_barras ILIKE ?) "
-                + "GROUP BY l.id_libro ORDER BY l.titulo";
-        String patron = "%" + (texto == null ? "" : texto.trim()) + "%";
+        return buscarInventario(texto, Integer.MAX_VALUE);
+    }
+
+    public List<Libro> buscarInventario(String texto, int limite) throws SQLException {
         List<Libro> libros = new ArrayList<>();
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, EstadoEjemplar.DISPONIBLE);
-            ps.setString(2, EstadoEjemplar.PRESTADO);
-            ps.setString(3, patron);
-            ps.setString(4, patron);
-            ps.setString(5, patron);
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_buscar_inventario(?) LIMIT ?")) {
+            ps.setString(1, texto(texto));
+            ps.setInt(2, limite);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Libro libro = new Libro();
@@ -80,96 +68,58 @@ public class LibroDAO {
     }
 
     public Libro buscarPorId(int idLibro) throws SQLException {
-        return buscarUno("WHERE id_libro = ?", idLibro);
+        return buscarUno("fn_buscar_libro_por_id", idLibro);
     }
 
     public Libro buscarPorIsbn(String isbn) throws SQLException {
-        return buscarUno("WHERE isbn = ?", isbn);
-    }
-
-    public void insertar(Libro libro) throws SQLException {
-        String sqlLibro = "INSERT INTO libros (isbn, titulo, editorial, anio_publicacion, descripcion) "
-                + "VALUES (?, ?, ?, ?, ?) RETURNING id_libro";
-        String sqlAutor = "INSERT INTO libro_autor (id_libro, id_autor) VALUES (?, ?)";
-        try (Connection con = ConexionBD.getConexion()) {
-            con.setAutoCommit(false);
-            try {
-                try (PreparedStatement ps = con.prepareStatement(sqlLibro)) {
-                    llenarDatos(ps, libro);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        rs.next();
-                        libro.setIdLibro(rs.getInt(1));
-                    }
-                }
-                try (PreparedStatement ps = con.prepareStatement(sqlAutor)) {
-                    for (Autor autor : libro.getAutores()) {
-                        ps.setInt(1, libro.getIdLibro());
-                        ps.setInt(2, autor.getIdAutor());
-                        ps.executeUpdate();
-                    }
-                }
-                guardarPortada(con, libro);
-                con.commit();
-            } catch (SQLException e) {
-                con.rollback();
-                throw e;
-            }
-        }
-    }
-
-  
-    public void registrar(Libro libro, List<String> nombresAutores) throws SQLException {
-        AutorDAO autorDAO = new AutorDAO();
-
-        for (String nombre : nombresAutores) {
-            Autor autor = autorDAO.buscarPorNombre(nombre);
-            if (autor == null) {
-                autor = new Autor(null, nombre);
-                autorDAO.insertar(autor);
-            }
-            libro.agregarAutor(autor);
-        }
-        insertar(libro);
-    }
-
-    public void actualizar(Libro libro) throws SQLException {
-        String sql = "UPDATE libros SET isbn = ?, titulo = ?, editorial = ?, anio_publicacion = ?, descripcion = ? "
-                + "WHERE id_libro = ?";
-        try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            llenarDatos(ps, libro);
-            ps.setInt(6, libro.getIdLibro());
-            ps.executeUpdate();
-            guardarPortada(con, libro);
-        }
-    }
-
-   
-    public void eliminar(int idLibro) throws SQLException {
-        try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement("DELETE FROM libros WHERE id_libro = ?")) {
-            ps.setInt(1, idLibro);
-            ps.executeUpdate();
-        }
+        return buscarUno("fn_buscar_libro_por_isbn", isbn);
     }
 
     
-    private void guardarPortada(Connection con, Libro libro) throws SQLException {
-        if (libro.getPortada() == null) {
-            return;
-        }
-        String sql = "INSERT INTO portada (id_libro, url_portada) VALUES (?, ?) "
-                + "ON CONFLICT (id_libro) DO UPDATE SET url_portada = EXCLUDED.url_portada";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, libro.getIdLibro());
-            ps.setString(2, libro.getPortada());
-            ps.executeUpdate();
+    public void registrar(Libro libro, List<String> nombresAutores) throws SQLException {
+        try (Connection con = ConexionBD.getConexion();
+                PreparedStatement ps = con.prepareStatement("CALL p_registrar_libro(?, ?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setString(1, libro.getIsbn());
+            ps.setString(2, libro.getTitulo());
+            ps.setString(3, libro.getEditorial());
+            ps.setObject(4, libro.getAnioPublicacion());
+            ps.setString(5, libro.getDescripcion());
+            ps.setString(6, libro.getPortada());
+            ps.setArray(7, con.createArrayOf("text", nombresAutores.toArray()));
+            ps.setNull(8, Types.INTEGER);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    libro.setIdLibro(rs.getInt(1));
+                }
+            }
         }
     }
 
-    private Libro buscarUno(String condicion, Object valor) throws SQLException {
+    public void actualizar(Libro libro) throws SQLException {
         try (Connection con = ConexionBD.getConexion();
-                PreparedStatement ps = con.prepareStatement(SELECT_LIBRO + condicion)) {
+                CallableStatement cs = con.prepareCall("CALL p_actualizar_libro(?, ?, ?, ?, ?, ?, ?)")) {
+            cs.setInt(1, libro.getIdLibro());
+            cs.setString(2, libro.getIsbn());
+            cs.setString(3, libro.getTitulo());
+            cs.setString(4, libro.getEditorial());
+            cs.setObject(5, libro.getAnioPublicacion());
+            cs.setString(6, libro.getDescripcion());
+            cs.setString(7, libro.getPortada());
+            cs.execute();
+        }
+    }
+
+    public void eliminar(int idLibro) throws SQLException {
+        try (Connection con = ConexionBD.getConexion();
+                CallableStatement cs = con.prepareCall("CALL p_eliminar_libro(?)")) {
+            cs.setInt(1, idLibro);
+            cs.execute();
+        }
+    }
+
+    private Libro buscarUno(String funcion, Object valor) throws SQLException {
+        try (Connection con = ConexionBD.getConexion();
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM " + funcion + "(?)")) {
             ps.setObject(1, valor);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
@@ -189,19 +139,9 @@ public class LibroDAO {
         }
     }
 
-    private void llenarDatos(PreparedStatement ps, Libro libro) throws SQLException {
-        ps.setString(1, libro.getIsbn());
-        ps.setString(2, libro.getTitulo());
-        ps.setString(3, libro.getEditorial());
-        ps.setObject(4, libro.getAnioPublicacion());
-        ps.setString(5, libro.getDescripcion());
-    }
-
     private List<Autor> listarAutores(Connection con, int idLibro) throws SQLException {
-        String sql = "SELECT a.id_autor, a.nombre FROM autores a "
-                + "INNER JOIN libro_autor la ON a.id_autor = la.id_autor WHERE la.id_libro = ? ORDER BY a.nombre";
         List<Autor> autores = new ArrayList<>();
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = con.prepareStatement("SELECT * FROM fn_listar_autores_libro(?)")) {
             ps.setInt(1, idLibro);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -210,5 +150,9 @@ public class LibroDAO {
             }
         }
         return autores;
+    }
+
+    private String texto(String busqueda) {
+        return busqueda == null ? "" : busqueda.trim();
     }
 }

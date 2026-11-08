@@ -16,6 +16,6 @@ public class VentanaEmergenteController {
 
     @FXML
     private void guardar() {
-        // Implementar lógica de Guardar (alumno, libro)
+     
     }
 }
